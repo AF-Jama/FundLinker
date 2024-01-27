@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>582346892617-u52861ugi3ri03tikcughg2344g4rmqg.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.582346892617-u52861ugi3ri03tikcughg2344g4rmqg</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>582346892617-ip1aka0nfmfjl64dndv622a7v3e5c80p.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyC97sf7jNjb9TQSDLBwKTjrT2lV6cY6raY</string>
+	<key>GCM_SENDER_ID</key>
+	<string>582346892617</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.fundlinker</string>
+	<key>PROJECT_ID</key>
+	<string>fundlinker-a7fcb</string>
+	<key>STORAGE_BUCKET</key>
+	<string>fundlinker-a7fcb.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:582346892617:ios:66c4e2259fabd11d18a698</string>
+</dict>
+</plist>
