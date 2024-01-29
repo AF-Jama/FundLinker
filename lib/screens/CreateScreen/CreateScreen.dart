@@ -54,11 +54,12 @@ class _CreateScreenState extends State<CreateScreen> {
                           
                           await Firestore.addPost(headingController.value.text, bodyController.value.text, Authentication.uid!);
 
-                          Navigator.of(context).push(MaterialPageRoute(builder: (context) => const MainScreen(),));
-
                           setState(() {
                             isSubmitting = false;
                           });
+                          
+                          Navigator.of(context).push(MaterialPageRoute(builder: (context) => const MainScreen(),));
+
                         }catch(error){
                           setState(() {
                             isSubmitting = false;

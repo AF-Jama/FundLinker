@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fundlinker/utils/firebase.dart';
 import '../../components/BottomNavigationBar/BottomNavigationBar.dart';
+import '../../components/PostCard/PostCard.dart';
 
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});
@@ -13,7 +14,7 @@ class MainScreen extends StatelessWidget {
         title: const Text("Home")),
 
       body: Container(
-        color: Colors.blue,
+        color: Colors.white,
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
@@ -78,6 +79,8 @@ class MainScreen extends StatelessWidget {
                     // )
                   ]) ,),
 
+                  const SizedBox(height: 20,),
+
                   Expanded(
                     child: StreamBuilder(
                       stream: userStream,
@@ -93,25 +96,38 @@ class MainScreen extends StatelessWidget {
                             itemBuilder: (context, index) {
                               Map<String, dynamic> data = snapshot.data!.docs[index].data()! as Map<String, dynamic>;
 
-                             return SizedBox(
-                              height: 200,
-                              child: Card(
-                                key: const Key("document.id"),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(data['heading'],style: const TextStyle(fontSize: 18.0) ,overflow: TextOverflow.ellipsis,),
+                              // return Card(
+                              //   key:  Key(snapshot.data!.docs[index].id),
+                              //   child: ListTile(
+                              //         title:   Text(data['heading'],style: const TextStyle(fontSize: 18.0) ,overflow: TextOverflow.ellipsis,),
+                              //         leading: const Icon(Icons.verified_user_sharp),
+                              //         subtitle: Text(data['body']
+                              //         ,softWrap: true,
+                              //          maxLines: 6,overflow: TextOverflow.ellipsis,),
+                              //       ),
+                              // );
 
-                                    const SizedBox(height: 5,),
+                              return PostCard(heading: data['heading'] ,body: data['body'],);
 
-                                    Text(data['body']
-                                    ,softWrap: true,
-                                     maxLines: 6,overflow: TextOverflow.ellipsis,), 
-                                  ],),
-                                )),
-                              );
+                            //  return SizedBox(
+                            //   height: 200,
+                            //   child: Card(
+                            //     key: const Key("document.id"),
+                            //     child: Padding(
+                            //       padding: const EdgeInsets.all(8.0),
+                            //       child: Column(
+                            //       crossAxisAlignment: CrossAxisAlignment.start,
+                            //       children: [
+                            //         Text(data['heading'],style: const TextStyle(fontSize: 18.0) ,overflow: TextOverflow.ellipsis,),
+
+                            //         const SizedBox(height: 5,),
+
+                            //         Text(data['body']
+                            //         ,softWrap: true,
+                            //          maxLines: 6,overflow: TextOverflow.ellipsis,), 
+                            //       ],),
+                            //     )),
+                            //   );
                               
                             },
                   
