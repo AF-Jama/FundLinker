@@ -21,6 +21,7 @@ class _CreateScreenState extends State<CreateScreen> {
   final _formKey = GlobalKey<FormState>();
   final headingController = TextEditingController(); // title controller
   final bodyController = TextEditingController(); // body controller
+  final URLcontroller = TextEditingController(); // url controller
 
 
   @override
@@ -52,13 +53,13 @@ class _CreateScreenState extends State<CreateScreen> {
                           });
 
                           
-                          await Firestore.addPost(headingController.value.text, bodyController.value.text, Authentication.uid!);
+                          await Firestore.addPost(headingController.value.text, bodyController.value.text, Authentication.uid!,URLcontroller.value.text);
 
                           setState(() {
                             isSubmitting = false;
                           });
                           
-                          Navigator.of(context).push(MaterialPageRoute(builder: (context) => const MainScreen(),));
+                          Navigator.of(context).pop();
 
                         }catch(error){
                           setState(() {
@@ -125,7 +126,25 @@ class _CreateScreenState extends State<CreateScreen> {
                     return null;
                   },
                 ),
-                ],))
+
+
+                TextFormField(
+                    controller: URLcontroller,
+                  decoration: const InputDecoration(
+                    border: UnderlineInputBorder(),
+                    hintText: 'Enter URL of fundraiser(www.gofund.com/....)',
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Enter text here';
+                    }
+
+                    if(!RegExp(r'^www.gofundme.com\/[\w]\/[\w-]+$').hasMatch(value)){
+                      return "Use valid go fund me link";
+                    }
+                  },
+                ),
+                ],)),
           
 
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fundlinker/screens/CreateScreen/CreateScreen.dart';
 import 'package:fundlinker/screens/FollowerPostsScreen/FollowerPostsScreen.dart';
+import 'package:fundlinker/screens/ProfileScreen/ProfileScreen.dart';
 import 'package:fundlinker/screens/RecommendedScreen/RecommendedScreen.dart';
 
 class BottomNav extends StatelessWidget {
@@ -28,7 +29,7 @@ class BottomNav extends StatelessWidget {
       ),
   
       BottomNavigationBarItem(
-        icon: Icon(Icons.recommend),
+        icon: Icon(Icons.person),
         tooltip: "Recommend",
         label: 'Recommendations',
       ),
@@ -45,7 +46,7 @@ class BottomNav extends StatelessWidget {
       }
 
       if(value==2){
-        Navigator.of(context).push(MaterialPageRoute(builder: (context) => const RecommendedScreen() ,));
+        Navigator.of(context).push(MaterialPageRoute(builder: (context) => const ProfileScreen() ,));
       }
     },
     );

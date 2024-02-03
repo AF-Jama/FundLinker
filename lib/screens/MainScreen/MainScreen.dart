@@ -1,5 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:fundlinker/components/LoadingCard/LoadingCard.dart';
+import 'package:fundlinker/utils/utils.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:fundlinker/utils/firebase.dart';
 import '../../components/BottomNavigationBar/BottomNavigationBar.dart';
 import '../../components/PostCard/PostCard.dart';
@@ -82,19 +85,20 @@ class MainScreen extends StatelessWidget {
                   const SizedBox(height: 20,),
 
                   Expanded(
-                    child: StreamBuilder(
-                      stream: userStream,
+                    child: FutureBuilder(
+                      future: Firestore.getPosts(),
                       builder: (context, snapshot) {
                         if (snapshot.hasError) {
-                        return const Text('Something went wrong');
+                        return const Center(child: Text('Something went wrong'));
                         }
                   
                         if(snapshot.hasData){
                           return ListView.builder(
                             scrollDirection: Axis.vertical,
-                            itemCount: snapshot.data!.docs.length ,
+                            itemCount: snapshot.data!.length ,
                             itemBuilder: (context, index) {
-                              Map<String, dynamic> data = snapshot.data!.docs[index].data()! as Map<String, dynamic>;
+                              // Map<String, dynamic> data = snapshot.data!.docs[index].data() as Map<String,dynamic>;
+                              final post = snapshot.data![index];
 
                               // return Card(
                               //   key:  Key(snapshot.data!.docs[index].id),
@@ -107,7 +111,14 @@ class MainScreen extends StatelessWidget {
                               //       ),
                               // );
 
-                              return PostCard(heading: data['heading'] ,body: data['body'],);
+                              return PostCard(heading: post.heading ,body: post.body,postId: post.postId ,link: post.link,profilePath: post.imgPath,key: Key(post.postId),datetime: post.timeCreated,likes: post.like,);
+
+                              //   return Shimmer.fromColors(
+                              //     baseColor: Colors.grey, 
+                              //     highlightColor: Colors.white,
+                              //     child: LoadingCard());
+
+                              //  },);
 
                             //  return SizedBox(
                             //   height: 200,
@@ -139,7 +150,15 @@ class MainScreen extends StatelessWidget {
                         //   return const Center(child: CircularProgressIndicator(),);
                         // }
 
-                        return const Center(child: CircularProgressIndicator(),);
+                        // return const Center(child: CircularProgressIndicator(),);
+                        return Column(
+                          children: [
+                            LoadingCard(),
+                            LoadingCard(),
+                            LoadingCard(),
+                            LoadingCard(),
+                            LoadingCard(),
+                          ],);
                   
                         // return ListView(
                         //   children: snapshot.data!.docs.map((DocumentSnapshot document) {

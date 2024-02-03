@@ -23,7 +23,7 @@ class AuthButton extends StatelessWidget {
 
           if(user.user!=null){
             // ignore: use_build_context_synchronously
-            Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const SplashScreen(),));
+            Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const MainScreen(),));
           }
 
 
