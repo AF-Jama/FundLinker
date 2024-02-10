@@ -6,6 +6,8 @@ import 'screens/CreateAccount/CreateAccount.dart';
 import 'utils/utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'utils/firebase.dart';
 import 'firebase_options.dart';
 
@@ -15,7 +17,7 @@ void main() async {
   options: DefaultFirebaseOptions.currentPlatform,
 
   );
-  // await FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
+  // await connectToFirebaseEmulator();
   runApp(const MyApp());
 }
 
@@ -56,6 +58,7 @@ class MyApp extends StatelessWidget {
           }
 
           return SplashScreen();
+
         },)
       
       : const AuthScreen() , // ternary operator displays home screen if user logged in or auth screen if user returns null

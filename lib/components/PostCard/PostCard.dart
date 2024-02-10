@@ -13,7 +13,7 @@ class PostCard extends StatefulWidget {
   final String body;
   final String postId;
   final String link;
-  final String? profilePath;
+  final String profilePath;
   final Timestamp datetime;
   final int likes;
 
@@ -27,81 +27,77 @@ class _PostCardState extends State<PostCard> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () async {
-        // final a = await Firestore.getPosts();
-        
-        print(widget.profilePath);
-      },
-      child: Container(
-        padding: const EdgeInsets.all(3.0),
-        child: Column(
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CircleAvatar(backgroundImage: (Random().nextInt(2)%2==0)?NetworkImage(widget.profilePath!):const AssetImage("assets/images/person.jpg") as ImageProvider ,),
+    // bool isPostLiked = true;
+    // int currentLikes = widget.likes;
     
-                const SizedBox(width: 20,),
+    return Container(
+      padding: const EdgeInsets.all(3.0),
+      child: Column(
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(backgroundImage: (widget.profilePath!=null)?NetworkImage(widget.profilePath!):const AssetImage("assets/images/person.jpg") as ImageProvider ,),
     
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(widget.heading,style: const TextStyle(fontSize: 18.0) ,overflow: TextOverflow.ellipsis), // heading
+              const SizedBox(width: 20,),
     
-                      Text(widget.link,style: const TextStyle(fontWeight: FontWeight.bold)),
-                
-                      const SizedBox(height: 4,),
-                
-                    Text(widget.body
-                    ,softWrap: true,
-                    maxLines: 6,
-                    overflow: TextOverflow.ellipsis,), //body
-                    ],
-                  ),
-                )
-              ],
-            ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(widget.heading,style: const TextStyle(fontSize: 18.0) ,overflow: TextOverflow.ellipsis), // heading
     
-            // const SizedBox(height: 6,),
+                    Text(widget.link,style: const TextStyle(fontWeight: FontWeight.bold)),
+              
+                    const SizedBox(height: 4,),
+              
+                  Text(widget.body
+                  ,softWrap: true,
+                  maxLines: 6,
+                  overflow: TextOverflow.ellipsis,), //body
+                  ],
+                ),
+              )
+            ],
+          ),
     
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                GestureDetector(onTap: () async {
-                  try {
-                    final isPostLiked = await Firestore.isPostLiked(widget.postId, Authentication.uid!);
+          // const SizedBox(height: 6,),
+    
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              GestureDetector(onTap: () async {
+                try {
+                  final isPostLiked = await Firestore.isPostLiked(widget.postId, Authentication.uid!);
 
-                    if(!isPostLiked){
-                      await Firestore.likePost(Authentication.uid!,widget.postId);
-                      setState(() {
-                        // likes = likes +1;
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Liked Post")));
-                      return;
-                    } 
-
-                    await Firestore.removeLikePost(Authentication.uid!, widget.postId);
+                  if(!isPostLiked){
+                    await Firestore.likePost(Authentication.uid!,widget.postId);
                     setState(() {
-                        // likes = likes +1;
-                      });
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Unliked Post")));
+                      // likes = likes +1;
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Liked Post")));
                     return;
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Could not like post with id ${widget.postId}")));
-                  }
-                },child: Image.asset("assets/images/heart.png",height: 20,width: 20,)),
-                const SizedBox(width: 6,),
-                Text("${widget.likes}",style: const TextStyle(color: Colors.black,fontWeight: FontWeight.bold,fontSize: 14.0),)
-              ],),
+                  } 
+
+                  await Firestore.removeLikePost(Authentication.uid!, widget.postId);
+                  setState(() {
+                      // likes = likes +1;
+                    });
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Unliked Post")));
+                  return;
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Could not like post with id ${widget.postId}")));
+                }
+              },child: Image.asset("assets/images/heart.png",height: 20,width: 20,)),
+              const SizedBox(width: 6,),
+              Text("${widget.likes}",style: const TextStyle(color: Colors.black,fontWeight: FontWeight.bold,fontSize: 14.0),)
+            ],),
     
-            const SizedBox(height: 6),
+          const SizedBox(height: 6),
     
-            const Divider(color: Colors.black,height: 2.0,),
+          const Divider(color: Colors.black,height: 2.0,),
     
-            const SizedBox(height: 20,)
-          ],) ,),
-    );
+          const SizedBox(height: 20,)
+        ],) ,);
   }
 }

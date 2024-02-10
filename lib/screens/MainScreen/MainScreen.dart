@@ -93,6 +93,10 @@ class MainScreen extends StatelessWidget {
                         }
                   
                         if(snapshot.hasData){
+                          if(snapshot.data!.isEmpty){
+                            return const Center(child: Text("No posts",style: TextStyle(fontSize: 18.0),),);
+                          }
+
                           return ListView.builder(
                             scrollDirection: Axis.vertical,
                             itemCount: snapshot.data!.length ,

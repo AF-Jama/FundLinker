@@ -14,6 +14,9 @@ class _RecommendedScreenState extends State<RecommendedScreen> {
   @override
   void initState() {
     // TODO: implement initState
+    late Future<Command> client;
+
+    client = Redis.getRedisClient();  
 
     super.initState();
   }

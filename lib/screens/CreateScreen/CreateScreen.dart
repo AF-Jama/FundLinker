@@ -59,7 +59,7 @@ class _CreateScreenState extends State<CreateScreen> {
                             isSubmitting = false;
                           });
                           
-                          Navigator.of(context).pop();
+                          Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => const MainScreen(),), (route) => false);
 
                         }catch(error){
                           setState(() {
@@ -139,7 +139,7 @@ class _CreateScreenState extends State<CreateScreen> {
                       return 'Enter text here';
                     }
 
-                    if(!RegExp(r'^www.gofundme.com\/[\w]\/[\w-]+$').hasMatch(value)){
+                    if(!RegExp(r'^www.gofundme.com\/[a-zA-Z]\/[\w-]+$').hasMatch(value)){
                       return "Use valid go fund me link";
                     }
                   },

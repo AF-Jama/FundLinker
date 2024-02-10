@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:path/path.dart';
 import './utils.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -19,11 +20,13 @@ class Firestore{
   }
 
 
-  static Future<void> createAccount(String uid,String firstName,String lastName) async {
+  static Future<void> createAccount(String uid,String firstName,String lastName,String username,String? profilePath) async {
     
     return await users.doc(uid).set(<String, dynamic>{
       'firstName':firstName,
       'lastName':lastName,
+      'profilePath':(profilePath==null)?"":profilePath,
+      'username':username,
       'accountCreatedOn':DateTime.now()
     });
   }
@@ -64,13 +67,6 @@ class Firestore{
 
     return userLikes.exists;
 
-    // if(userLikes.size==1){
-    //   // triggered if postId exists within user likes collection
-    //   return true;
-    // }
-
-    // return false;
-
   } 
 
   static Future<void> removeLikePost(String uid,String postId) async {
@@ -85,22 +81,74 @@ class Firestore{
     final CollectionReference posts = FirebaseFirestore.instance.collection("posts");
 
     final QuerySnapshot<Object?> allPosts = await posts.get();
+    
+
+    print(allPosts.docs.length);
 
     return Future.wait(allPosts.docs.map((post) async {
       final postData = post.data() as Map<String,dynamic>;
 
       final userUid = postData['uid']; // user id
 
-      final userProfileImage = await FireStorage.getUserProfileImage(userUid); // returns user profile image
+      final userData = await Firestore.getUser(userUid); // returns user object
 
-      if(userProfileImage==null){
-        return Post(imgPath: null, heading: postData['heading'], body: postData['body'], postId: post.id, link: postData['link'],timeCreated: postData['time_created'],like: postData['likes']);
-      }
+      final isPostLiked = await Firestore.isPostLiked(post.id, userUid); // returns bool if post is liked
 
-      return Post(imgPath: userProfileImage, heading: postData['heading'], body: postData['body'], postId: post.id, link: postData['link'],timeCreated: postData['time_created'],like: postData['likes']);
+      return Post(imgPath: userData.profilePath, heading: postData['heading'], body: postData['body'], postId: post.id, link: postData['link'],timeCreated: postData['time_created'],like: postData['likes'],isLiked: isPostLiked);
 
     },).toList());
 
+  }
+
+  static Future<AppUser> getUser(String uid) async {
+    final userData = await users.doc(uid).get();
+
+    final data = userData.data() as Map<String,dynamic>;
+
+    return AppUser(firstName: data['firstName'], lastName: data['lastName'], username: data['username'], profilePath: data['profilePath'], uid: userData.id);
+
+  }
+
+  static Future<List<Post>> getUserPosts(String uid) async {
+    final CollectionReference posts = FirebaseFirestore.instance.collection("posts");
+
+    final userPosts = await posts.where('uid',isEqualTo: uid).get(); // returns user posts
+    
+    if(userPosts.docs.isEmpty) return [];
+
+    return userPosts.docs.map((post) {
+      final data = post.data() as Map<String,dynamic>;
+
+      return Post(imgPath: data['profilePath'], heading: data['heading'], body: data['body'], postId: post.id, link: data['link'],timeCreated: data['time_created'],like: data['likes'],isLiked: true);
+    },).toList();
+
+    
+  }
+
+  static Future<List<AppUser>> getSearchedUsers(String query) async {
+    final usersQueryResult = await users.orderBy("username").where('username',isGreaterThanOrEqualTo: query ).where('username',isLessThanOrEqualTo: '$query\uf8ff').limit(5).get();
+    // final usersQueryResult = await users.orderBy("username").where('username',isEqualTo: query ).limit(5).get();
+
+    if(usersQueryResult.docs.isEmpty){
+      return [];
+    }
+
+    print(usersQueryResult.docs.length);
+
+    return usersQueryResult.docs.map((e) {
+      final Map<String,dynamic> data = e.data() as Map<String,dynamic>;
+
+      print(data);
+
+      return AppUser(firstName: data['firstName'], lastName: data['lastName'], username: data['username'],profilePath: data['profilePath'],uid: e.id);
+
+    },).toList();
+  }
+
+  static Future<bool> isUsernameValid(String username) async {
+    final queryResults =  await users.orderBy('username').where('username',isEqualTo: username).get();
+
+    return queryResults.docs.isEmpty;
   }
 
   // static Future<void> addProfileImage(File file,String uid) async {

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fundlinker/screens/CreateScreen/CreateScreen.dart';
 import 'package:fundlinker/screens/FollowerPostsScreen/FollowerPostsScreen.dart';
-import 'package:fundlinker/screens/ProfileScreen/ProfileScreen.dart';
-import 'package:fundlinker/screens/RecommendedScreen/RecommendedScreen.dart';
+import 'package:fundlinker/screens/SearchScreen/SearchScreen.dart';
+// import 'package:fundlinker/screens/ProfileScreen/ProfileScreen.dart';
+// import 'package:fundlinker/screens/RecommendedScreen/RecommendedScreen.dart';
+import 'package:fundlinker/screens/UserScreen/UserScreen.dart';
 
 class BottomNav extends StatelessWidget {
   const BottomNav({super.key, required this.activePage});
@@ -17,9 +19,9 @@ class BottomNav extends StatelessWidget {
     currentIndex: activePage-1,
     items: const [
         BottomNavigationBarItem(
-        icon: Icon(Icons.zoom_out_map,),
-        tooltip: "Followers Post",
-        label: 'Followers Post',
+        icon: Icon(Icons.search,),
+        tooltip: "Search",
+        label: 'Search',
       ),
   
       BottomNavigationBarItem(
@@ -38,7 +40,7 @@ class BottomNav extends StatelessWidget {
     onTap: (value) {
 
       if(value==0){
-        Navigator.of(context).push(MaterialPageRoute(builder: (context) => const FollowerPostScreen() ,));
+        Navigator.of(context).push(MaterialPageRoute(builder: (context) => const SearchScreen() ,));
       }
 
       if(value==1){
@@ -46,7 +48,7 @@ class BottomNav extends StatelessWidget {
       }
 
       if(value==2){
-        Navigator.of(context).push(MaterialPageRoute(builder: (context) => const ProfileScreen() ,));
+        Navigator.of(context).push(MaterialPageRoute(builder: (context) => const CreateScreen() ,));
       }
     },
     );

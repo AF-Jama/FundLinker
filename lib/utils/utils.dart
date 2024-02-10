@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:redis/redis.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -74,13 +76,67 @@ class Redis{
 
 
 class Post{
-  Post({ required this.imgPath, required this.heading, required this.body, required this.postId, required this.link, required this.like ,required this.timeCreated });
+  Post({ required this.imgPath, required this.heading, required this.body, required this.postId, required this.link, required this.like ,required this.timeCreated, required this.isLiked });
 
-  final String? imgPath; // img path can be actual path or null
+  final String imgPath; // img path can be actual path or null
   final String heading;
   final String body;
   final String postId;
   final String link;
   final int like;
   final Timestamp timeCreated;
+  final bool isLiked;
+}
+
+
+class AppUser{
+  AppUser({ required this.firstName, required this.lastName, required this.username, required this.profilePath, required this.uid });
+
+  final String firstName;
+  final String lastName;
+  final String username;
+  final String profilePath;
+  final String uid;
+
+
+}
+
+
+// Future connectToFirebaseEmulator() async {
+//   final localHostString = 'localhost';
+
+//   FirebaseFirestore.instance.settings = Settings(
+//     host: '$localHostString:8081',
+//     sslEnabled: false,
+//     persistenceEnabled: false,
+//   );
+
+//   await FirebaseAuth.instance.useAuthEmulator('localhost', 9098);
+// }
+
+// Future connectToFirestoreEmulator() async {
+//   final localHostString = 'localhost';
+
+//   FirebaseFirestore.instance.settings = Settings(
+//     host: '$localHostString:8081',
+//     sslEnabled: false,
+//     persistenceEnabled: false,
+//   );
+
+//   FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
+// }
+
+Future connectToFirebaseEmulator() async {
+
+  FirebaseFirestore.instance.settings = const Settings(
+    host: 'localhost:8080',
+    sslEnabled: false,
+    persistenceEnabled: false,
+  );
+
+  await FirebaseStorage.instance.useStorageEmulator('localhost', 9199); // storage emulator
+
+  await FirebaseAuth.instance.useAuthEmulator('localhost', 9099); // auth emulator
+
+  FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080); // firestore emulator
 }
