@@ -14,7 +14,7 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   late Future<List<AppUser>> appUsers;
-    String _searchQuery=''; // search query
+  String _searchQuery=''; // search query
     // Future<List<AppUser>> getUsers;
 
   //  @override
@@ -65,6 +65,10 @@ class _SearchScreenState extends State<SearchScreen> {
                   ],
                 ),
               );
+            }
+
+            if(snapshot.hasError){
+              return Text("${snapshot.error}");
             }
 
             if(snapshot.hasData){

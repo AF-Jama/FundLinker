@@ -97,6 +97,8 @@ class AppUser{
   final String username;
   final String profilePath;
   final String uid;
+  // final List<dynamic>? followers; // followers id list, List<String>? ???
+  // final List<dynamic>? following; // following id list, List<String>? ???
 
 
 }

@@ -80,7 +80,7 @@ class Firestore{
   static Future<List<Post>> getPosts() async { // returns promise, list of posts or null
     final CollectionReference posts = FirebaseFirestore.instance.collection("posts");
 
-    final QuerySnapshot<Object?> allPosts = await posts.get();
+    final QuerySnapshot<Object?> allPosts = await posts.orderBy("time_created",descending: true).get();
     
 
     print(allPosts.docs.length);
@@ -112,14 +112,17 @@ class Firestore{
   static Future<List<Post>> getUserPosts(String uid) async {
     final CollectionReference posts = FirebaseFirestore.instance.collection("posts");
 
-    final userPosts = await posts.where('uid',isEqualTo: uid).get(); // returns user posts
+    final userPosts = await posts
+        .where('uid', isEqualTo: uid)
+        .orderBy('time_created', descending: true)
+        .get(); // returns user postss
     
     if(userPosts.docs.isEmpty) return [];
 
     return userPosts.docs.map((post) {
-      final data = post.data() as Map<String,dynamic>;
+      final Map<String,dynamic> data = post.data() as Map<String,dynamic>;
 
-      return Post(imgPath: data['profilePath'], heading: data['heading'], body: data['body'], postId: post.id, link: data['link'],timeCreated: data['time_created'],like: data['likes'],isLiked: true);
+      return Post(imgPath: data['link'], heading: data['heading'], body: data['body'], postId: post.id, link: data['link'],timeCreated: data['time_created'],like: data['likes'],isLiked: true);
     },).toList();
 
     
@@ -129,18 +132,18 @@ class Firestore{
     final usersQueryResult = await users.orderBy("username").where('username',isGreaterThanOrEqualTo: query ).where('username',isLessThanOrEqualTo: '$query\uf8ff').limit(5).get();
     // final usersQueryResult = await users.orderBy("username").where('username',isEqualTo: query ).limit(5).get();
 
-    if(usersQueryResult.docs.isEmpty){
-      return [];
-    }
+    // if(usersQueryResult.docs.isEmpty){
+    //   return [];
+    // }
 
     print(usersQueryResult.docs.length);
 
     return usersQueryResult.docs.map((e) {
       final Map<String,dynamic> data = e.data() as Map<String,dynamic>;
 
-      print(data);
+      print(data['followers'] is List<dynamic>);
 
-      return AppUser(firstName: data['firstName'], lastName: data['lastName'], username: data['username'],profilePath: data['profilePath'],uid: e.id);
+      return AppUser(firstName: data['firstName'], lastName: data['lastName'], username: data['username'],profilePath: data['profilePath'],uid: e.id,);
 
     },).toList();
   }
@@ -149,6 +152,89 @@ class Firestore{
     final queryResults =  await users.orderBy('username').where('username',isEqualTo: username).get();
 
     return queryResults.docs.isEmpty;
+  }
+
+  static Future<void> followUser(String uid,String followeeId) async {
+    // logic to follow user, following a user  
+
+    await users.doc(uid).update({
+      'following':FieldValue.arrayUnion([followeeId])
+    }); // user following, where uid follows followeeid
+
+    await users.doc(followeeId).update({
+      'followers':FieldValue.arrayUnion([uid])
+    }); // inverse relationship where uid is a follower of followee
+
+  }
+
+  static Future<void> removeUser(String uid,String followeeId) async {
+    // logic to unfollow(remove) user, following a user  
+
+    await users.doc(uid).update({
+      'following':FieldValue.arrayRemove([followeeId])
+    }); // users remove followee from following list<String>
+
+    await users.doc(followeeId).update({
+      'followers':FieldValue.arrayRemove([uid])
+    }); // inverse relationship, follower removed from followee follower list<String>
+
+  }
+
+  static Future<bool> isFollowing(String uid,String followeeId) async {
+    // returns boolean if user is following followee
+    final user = await users.doc(uid).get();
+
+    if(!user.exists){
+      return false;
+    }
+
+    final Map<String,dynamic> data  = user.data() as Map<String,dynamic>;
+
+    final List followingList = (data['following']==null)?[]:data['following'] as List<dynamic>; // returns following array within user document data, contains all uid of following users
+
+    return followingList.contains(followeeId); // returns bool promise value
+
+  }
+
+  static Future<bool> isFollower(String uid,String followerId) async {
+    // returns boolean if follower(followerId) is following user
+      final user = await users.doc(uid).get();
+
+      if(!user.exists){
+        return false;
+      }
+
+    final Map<String,dynamic> data  = user.data() as Map<String,dynamic>;
+
+    final List followerList = (data['followers']==null)?[]: data['followers'] as List<dynamic>; // returns followers array within user document data, contains all uids of followers --> List<dynamic>???, refactor to List<string>?
+
+    return followerList.contains(followerId); // returns bool promise value
+  }
+
+  static Future<int> getUserFollowersCount(String uid) async {
+    final user = await users.doc(uid).get();
+
+    if(!user.exists) return 0; // triggered if user does not exist
+
+    final Map<String,dynamic> data = user.data() as Map<String,dynamic>; // user data within document
+
+    final List<dynamic>? followersList = data['followers'];
+
+    return (followersList==null)?0:followersList.length; // returns 0 if follower list is null (signifying user has no followers) or returns follower list length
+    
+  }
+
+ static Future<int> getUserFollowingCount(String uid) async {
+    final user = await users.doc(uid).get();
+
+    if(!user.exists) return 0; // triggered if user does not exist
+
+    final Map<String,dynamic> data = user.data() as Map<String,dynamic>; // user data within document
+
+    final List<dynamic>? followingList = data['following'];
+
+    return (followingList==null)?0:followingList.length; // returns 0 if following list is null (signifying user is following no one) or returns following list length
+    
   }
 
   // static Future<void> addProfileImage(File file,String uid) async {
