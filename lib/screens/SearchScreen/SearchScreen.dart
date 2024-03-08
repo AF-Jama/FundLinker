@@ -33,6 +33,7 @@ class _SearchScreenState extends State<SearchScreen> {
     double appBarHeight = AppBar().preferredSize.height;
 
     return Scaffold(
+      appBar: AppBar(title: const Text("Search for users"),),
       body: Column(
         children: [
           Container(

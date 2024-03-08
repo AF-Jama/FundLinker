@@ -76,9 +76,9 @@ class Redis{
 
 
 class Post{
-  Post({ required this.imgPath, required this.heading, required this.body, required this.postId, required this.link, required this.like ,required this.timeCreated, required this.isLiked });
+  Post({ this.imgPath, required this.heading, required this.body, required this.postId, required this.link, required this.like ,required this.timeCreated, required this.isLiked });
 
-  final String imgPath; // img path can be actual path or null
+  String? imgPath; // img path can be actual path or null
   final String heading;
   final String body;
   final String postId;
@@ -90,15 +90,15 @@ class Post{
 
 
 class AppUser{
-  AppUser({ required this.firstName, required this.lastName, required this.username, required this.profilePath, required this.uid });
+  AppUser({ required this.firstName, required this.lastName, required this.username, this.profilePath, required this.uid, this.followers, this.following });
 
   final String firstName;
   final String lastName;
   final String username;
-  final String profilePath;
+  String? profilePath;
   final String uid;
-  // final List<dynamic>? followers; // followers id list, List<String>? ???
-  // final List<dynamic>? following; // following id list, List<String>? ???
+  List<dynamic>? followers; // followers id list, List<String>? ???
+  List<dynamic>? following; // following id list, List<String>? ???
 
 
 }

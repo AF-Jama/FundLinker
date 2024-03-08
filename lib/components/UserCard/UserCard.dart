@@ -3,9 +3,9 @@ import 'package:fundlinker/utils/utils.dart';
 
 
 class UserCard extends StatelessWidget {
-  const UserCard({super.key, required this.imgPath, required this.firstName, required this.lastName, required this.username, required this.uid});
+  UserCard({super.key, this.imgPath, required this.firstName, required this.lastName, required this.username, required this.uid});
 
-  final String imgPath;
+  String? imgPath;
   final String firstName;
   final String lastName;
   final String username;
@@ -20,7 +20,7 @@ class UserCard extends StatelessWidget {
           decoration: BoxDecoration(borderRadius: const BorderRadius.all(Radius.circular(12.0)),color: Colors.grey[200]),
           child: Row(
             children: [
-              SizedBox(height: 60,width: 60,child: CircleAvatar(backgroundImage: (imgPath!="")?NetworkImage(imgPath):const AssetImage("assets/images/default-user.jpg") as ImageProvider ,), ),
+              SizedBox(height: 60,width: 60,child: CircleAvatar(backgroundImage: (imgPath!=null)?NetworkImage(imgPath!):const AssetImage("assets/images/default-user.jpg") as ImageProvider ,), ),
 
               const SizedBox(width: 12,),
 

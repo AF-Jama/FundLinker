@@ -36,21 +36,17 @@ class Firestore{
       'heading':heading,
       'body':body,
       'uid':uid,
-      'likes':0,
-      'dislikes':0,
+      'likes':1, // by default likes is set to 1
+      // 'dislikes':0,
       'time_created':DateTime.now(),
       'link':link,
     });
   }
 
   static Future<void> likePost(String uid,String postId) async {
-    final CollectionReference userLikes = users.doc(uid).collection('likes');
+    final DocumentReference<Object?> user = users.doc(uid); // reference to user document
 
-    await posts.doc(postId).update({"likes": FieldValue.increment(1)});
-
-    return await userLikes.doc(postId).set({
-      'number':1,
-    });
+    await user.update({"likes": FieldValue.arrayUnion([postId])}); // updates likes field with postId
     
   }
 
@@ -60,25 +56,28 @@ class Firestore{
   // }
 
   static Future<bool> isPostLiked(String postId,String uid) async {
-    final CollectionReference userLikesCollectionReference = users.doc(uid).collection('likes');
+    final DocumentReference<Object?> userDocumentReference = users.doc(uid); // returns reference to user document
 
-    final userLikes = await userLikesCollectionReference.doc(postId).get();
-    // final userLikes = await userLikesCollectionReference.where(FieldPath.documentId,isEqualTo: postId).get();
+    final DocumentSnapshot<Object?> user = await userDocumentReference.get();
 
-    return userLikes.exists;
+    final Map<String,dynamic> data = user.data() as Map<String,dynamic>;
+
+    final List<dynamic>? likedList = data["likes"]; // returns liked list or null
+
+    if(likedList==null) return false;
+
+    return likedList.contains(postId);
 
   } 
 
   static Future<void> removeLikePost(String uid,String postId) async {
-    final CollectionReference userLikes = users.doc(uid).collection('likes');
+    final DocumentReference<Object?> user = users.doc(uid); // returns reference to user document
 
-    await userLikes.doc(postId).delete();
-
-    await posts.doc(postId).update({"likes": FieldValue.increment(-1)});
+    await user.update({"likes":FieldValue.arrayRemove([postId])}); // updates likes field with removing postId 
   }
 
   static Future<List<Post>> getPosts() async { // returns promise, list of posts or null
-    final CollectionReference posts = FirebaseFirestore.instance.collection("posts");
+    final CollectionReference posts = FirebaseFirestore.instance.collection("posts"); // returns reference to post collection
 
     final QuerySnapshot<Object?> allPosts = await posts.orderBy("time_created",descending: true).get();
     
@@ -100,12 +99,53 @@ class Firestore{
 
   }
 
+  static Future<List<Post>> getUserFeedPosts(String? lastDocumentId,String uid,int queryLimit) async {
+    final CollectionReference posts = FirebaseFirestore.instance.collection("posts"); // returns reference to post collection
+    late Query<Object?> userPosts;
+
+    final userData = await Firestore.getUser(uid); // returns user
+
+    final followingList = userData.following; // returns user following
+
+    if(lastDocumentId==null){
+      userPosts = posts
+      .where("uid",whereIn: followingList)
+      .limit(queryLimit)
+      .orderBy("time_created",descending: true);
+    }else{
+      
+      final finalDocSnapshot = await posts.doc(lastDocumentId).get(); // returns final post document
+
+      userPosts = posts
+      .where("uid",whereIn: followingList)
+      .limit(queryLimit)
+      .orderBy("time_created",descending: true)
+      .startAfterDocument(finalDocSnapshot);
+    }
+
+    final userPostss = await userPosts.get();
+
+    return Future.wait(userPostss.docs.map((post) async {
+      final Map<String,dynamic> postData = post.data() as Map<String,dynamic>;
+
+      final userUid = postData['uid']; // user id of post document
+
+      final userData = await Firestore.getUser(userUid); // returns user object
+
+      final isPostLiked = await Firestore.isPostLiked(post.id, uid); // returns bool if post is liked
+
+      return Post(imgPath: userData.profilePath, heading: postData['heading'], body: postData['body'], postId: post.id, link: postData['link'],timeCreated: postData['time_created'],like: postData['likes'],isLiked: isPostLiked);
+
+    },).toList());
+
+  }
+
   static Future<AppUser> getUser(String uid) async {
     final userData = await users.doc(uid).get();
 
     final data = userData.data() as Map<String,dynamic>;
 
-    return AppUser(firstName: data['firstName'], lastName: data['lastName'], username: data['username'], profilePath: data['profilePath'], uid: userData.id);
+    return AppUser(firstName: data['firstName'], lastName: data['lastName'], username: data['username'], profilePath: data['profilePath'], uid: userData.id,followers: data['followers'],following: data['following']);
 
   }
 

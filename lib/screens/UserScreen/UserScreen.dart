@@ -26,36 +26,16 @@ class _UserScreenState extends State<UserScreen> {
   int numberOfFollowers = 0;
   int numberOfFollowing = 0;
   int numberOfPosts = 0;
-  // late bool _isLastPage;
-  // late int currentPage;
-  // late bool _loading;
-  // late bool _error;
-  // late ScrollController _scrollController;
-  // late List<Post> _posts;
-  // late Future<List> data;
-  // String? lastDocumentId; // last document id, for each page
-  // int PAGELIMIT =5; // page limit of posts (ie: 5 posts per page)
-  // final int _nextPageTrigger = 3; // triggers fetch when 3 more posts being currently displayed 
-    late bool _isLastPage; // boolean is last page
-    late int _pageNumber; // current page number
-    late bool _error; // boolean error
-    late bool _loading; // // loading error
-    final int _numberOfPostsPerRequest = 5; // number of posts per page
-    late List<Post> _posts; // posts 
-    final int _nextPageTrigger = 3; // posts left until fetching next page
-    late ScrollController _scrollController;
-    // late final QuerySnapshot<Object?> userPosts;
-    String? lastDocumentId; // last document id, initially is null
+  int pass = 1;
 
-  // Future<List> _fetchUserData() async {
-  //   // Simulating an async call, e.g., fetching counter value from a server
-  //   // final userData = await Future.wait([Firestore.isFollowing(Authentication.uid!, widget.user.uid),Firestore.isFollower(Authentication.uid!, widget.user.uid)]);
-  //   // setState(() {
-  //   //   isFollowing=userData[0];
-  //   // });
-
-  //   // return userData;
-  // }
+  late bool _isLastPage; // boolean is last page
+  late bool _error; // boolean error
+  late bool _loading; // // loading error
+  final int _numberOfPostsPerRequest = 5; // number of posts per page
+  late List<Post> _posts; // posts 
+  final int _nextPageTrigger = 3; // posts left until fetching next page
+  late ScrollController _scrollController;
+  String? lastDocumentId; // last document id, initially is null
 
   @override
   void initState() {
@@ -66,11 +46,9 @@ class _UserScreenState extends State<UserScreen> {
     getFollowingStatus();
     getNumberOfPosts();
     _posts = [];
-    _pageNumber=1;
     _loading = true;
     _error=false;
     _isLastPage=false;
-    _scrollController = ScrollController();
     fetchPage();
   }
 
@@ -113,35 +91,28 @@ class _UserScreenState extends State<UserScreen> {
   }
 
   void fetchPage() async {
+    late Query<Object?> userPosts;
     try{
-      QuerySnapshot<Object?> userPostss;
-      final CollectionReference posts = FirebaseFirestore.instance.collection("posts");
-
-
+      final CollectionReference posts = FirebaseFirestore.instance.collection("posts"); // returns reference to post collection
 
       if(lastDocumentId==null){
-        final userPosts = await posts
-          .where('uid',isEqualTo: widget.user.uid)
-          .orderBy("time_created",descending: true)
-          .limit(_numberOfPostsPerRequest)
-          .get(); // returns user posts in desceding order
-
-          userPostss = userPosts;
-      }else{
-        final lastDocument = await posts.doc(lastDocumentId).get();
-
-        final userPosts = await posts
-        .where('uid',isEqualTo: widget.user.uid)
-        .orderBy("time_created",descending: true)
-        .startAfterDocument(lastDocument)
+        // triggered if last document
+        userPosts =  posts
+        .where("uid",isEqualTo: widget.user.uid)
         .limit(_numberOfPostsPerRequest)
-        .get(); // returns user posts in desceding order
+        .orderBy("time_created",descending: true);
+      }else{
+        final finalDocSnapshot = await posts.doc(lastDocumentId).get();
+        
+        userPosts = posts
+        .where("uid",isEqualTo: widget.user.uid)
+        .limit(_numberOfPostsPerRequest)
+        .orderBy("time_created",descending: true)
+        .startAfterDocument(finalDocSnapshot);
 
-        userPostss = userPosts;
       }
 
-
-      // final postList = userPosts.docs.map((post) => Post(imgPath: imgPath, heading: heading, body: body, postId: postId, link: link, like: like, timeCreated: timeCreated, isLiked: isLiked));
+      final userPostss =  await userPosts.get(); // returns user posts document
 
       final postList = userPostss.docs.map((post) {
       final Map<String,dynamic> data = post.data() as Map<String,dynamic>;
@@ -152,13 +123,11 @@ class _UserScreenState extends State<UserScreen> {
       setState(() {
         _isLastPage = postList.length < _numberOfPostsPerRequest; // if posts returned is less than number of posts per page, this signifies that it is last page
         _loading = false;
-        _pageNumber = _pageNumber +1;
-        lastDocumentId = postList[postList.length-1].postId; // gets last document id for previous query
+        lastDocumentId = postList.isEmpty?null:postList[postList.length-1].postId; // gets last document id for previous query
         _posts.addAll(postList);
       });
 
     }catch(error){
-      print(error);
       setState(() {
         _loading=false;
         _error=true;
@@ -197,19 +166,44 @@ class _UserScreenState extends State<UserScreen> {
   //   }
   // }
 
+  // Future<List<Post>> getDocuments() async {
+  //   final finalDocSnapshot = await posts.doc("WMboJ3T6qT92OPuO6sJ9").get();
+
+  //   final userPosts = await posts
+  //   .where("uid",isEqualTo: widget.user.uid)
+  //   .limit(_numberOfPostsPerRequest)
+  //   .orderBy("time_created",descending: true)
+  //   .startAfterDocument(finalDocSnapshot)
+  //   .get();    
+
+
+  //   final postList = userPosts.docs.map((post) {
+  //     final Map<String,dynamic> data = post.data() as Map<String,dynamic>;
+
+  //     return Post(imgPath: data['link'], heading: data['heading'], body: data['body'], postId: post.id, link: data['link'],timeCreated: data['time_created'],like: data['likes'],isLiked: true);
+  //   },).toList();
+
+  //   return postList;
+
+
+
+  // }
+
   @override
   Widget build(BuildContext context) {
     double statusBarHeight = MediaQuery.of(context).padding.top; // status bar height
     double appBarHeight = AppBar().preferredSize.height;
 
+    _scrollController = ScrollController();
+
     _scrollController.addListener(() {
       // nextPageTrigger will have a value equivalent to 80% of the list size.
-        var nextPageTrigger = 0.8 * _scrollController.position.maxScrollExtent;
+        var nextPageTrigger =  _scrollController.position.maxScrollExtent; // returns 80% of max scroll
 
       // _scrollController fetches the next paginated data when the current postion of the user on the screen has surpassed 
-        if (_scrollController.position.pixels > nextPageTrigger) {
-          _loading = true;
-          fetchPage();
+        if (_scrollController.position.pixels == nextPageTrigger) {
+            fetchPage();
+
         }
       });
 
@@ -243,7 +237,7 @@ class _UserScreenState extends State<UserScreen> {
                Row(
                  mainAxisAlignment: MainAxisAlignment.center,
                  children: [
-                   SizedBox(height: 90,width: 90,child: CircleAvatar(backgroundImage: (widget.user.profilePath!='')?NetworkImage(widget.user.profilePath):const AssetImage("assets/images/default-user.jpg") as ImageProvider ,),),
+                   SizedBox(height: 90,width: 90,child: CircleAvatar(backgroundImage: (widget.user.profilePath!=null)?NetworkImage(widget.user.profilePath!):const AssetImage("assets/images/default-user.jpg") as ImageProvider ,),),
                 
                    const SizedBox(width: 20,),
                 
@@ -253,8 +247,6 @@ class _UserScreenState extends State<UserScreen> {
                      Text("${widget.user.firstName} ${widget.user.lastName}",style: const TextStyle(fontSize: 18.0,color: Colors.white),),
                      Text("@${widget.user.username}",style: const TextStyle(fontSize: 18.0,color: Colors.white),),
                     //  const Text("Hey Now, from the howard stern show",style: TextStyle(color: Colors.white)),
-                    if(_loading)
-                      const Text("Loading data"),
                      const SizedBox(height: 6,),
                      
                      if(Authentication.uid!=widget.user.uid)
@@ -284,9 +276,7 @@ class _UserScreenState extends State<UserScreen> {
                       }, style: const ButtonStyle(backgroundColor: MaterialStatePropertyAll(Colors.white),shape: MaterialStatePropertyAll(RoundedRectangleBorder(side: BorderSide(width: 2.0,color: Colors.transparent),borderRadius: BorderRadius.all(Radius.circular(6.0)) ),),),child: const Text("Follow",style: TextStyle(color: Colors.green,fontWeight: FontWeight.w600),),)
                     )
                       else
-                        ElevatedButton(onPressed: () => setState(() {
-                          isFollowing=true;
-                        }), style: const ButtonStyle(backgroundColor: MaterialStatePropertyAll(Colors.white),shape: MaterialStatePropertyAll(RoundedRectangleBorder(side: BorderSide(width: 2.0,color: Colors.transparent),borderRadius: BorderRadius.all(Radius.circular(6.0)))) ),child: const Text("Settings",style: TextStyle(color: Colors.green,fontWeight: FontWeight.w600),),)
+                        const ElevatedButton(onPressed: null, style: const ButtonStyle(backgroundColor: MaterialStatePropertyAll(Colors.white),shape: MaterialStatePropertyAll(RoundedRectangleBorder(side: BorderSide(width: 2.0,color: Colors.transparent),borderRadius: BorderRadius.all(Radius.circular(6.0)))) ),child: const Text("Settings",style: TextStyle(color: Colors.green,fontWeight: FontWeight.w600),),)
                    ],)
                  ],),
         
@@ -321,36 +311,38 @@ class _UserScreenState extends State<UserScreen> {
                  ],)  
              ],) ,),
 
-             Expanded(
-              child: FutureBuilder(
-                future: Firestore.getUserPosts(widget.user.uid),
-                builder: (context, snapshot) {
-                  if(snapshot.hasData){
-                    if(snapshot.data!.isEmpty){
-                      return Center(child: Text("${widget.user.firstName} ${widget.user.lastName} has no posts"));
-                    }
+            //  Expanded(
+            //   child: FutureBuilder(
+            //     future: Firestore.getUserPosts(widget.user.uid),
+            //     builder: (context, snapshot) {
+            //       if(snapshot.hasData){
+            //         if(snapshot.data!.isEmpty){
+            //           print(snapshot.data);
+            //           return Center(child: Text("${widget.user.firstName} ${widget.user.lastName} has no posts"));
+            //         }
 
-                    return ListView.builder(
-                      scrollDirection: Axis.vertical,
-                      itemCount: snapshot.data!.length,
-                      itemBuilder: (context, index) {
-                        final post = snapshot.data![index];
+            //         return ListView.builder(
+            //           controller: _scrollController,
+            //           scrollDirection: Axis.vertical,
+            //           itemCount: snapshot.data!.length,
+            //           itemBuilder: (context, index) {
+            //             final post = snapshot.data![index];
 
-                        return PostCard(heading: post.heading, body: post.body, postId: post.postId, link: post.link, profilePath: widget.user.profilePath, datetime: post.timeCreated, likes: post.like);
-                      },);
+            //             return PostCard(heading: post.heading, body: post.body, postId: post.postId, link: post.link, profilePath: widget.user.profilePath, datetime: post.timeCreated, likes: post.like);
+            //           },);
 
-                    // return Text("User has ${snapshot.data!.docs.length} posts");
-                  }
+            //         // return Text("User has ${snapshot.data!.docs.length} posts");
+            //       }
 
-                  if(snapshot.hasError){
-                    print(snapshot.error);
-                    return const Center(child: Text("Error while fetching posts"),);
-                  }
+            //       if(snapshot.hasError){
+            //         print(snapshot.error);
+            //         return const Center(child: Text("Error while fetching posts"),);
+            //       }
 
-                  return const Center(child: CircularProgressIndicator(),);
-                },))
+            //       return const Center(child: CircularProgressIndicator(),);
+            //     },))
 
-            // Expanded(child: buildPostsView())
+            Expanded(child: buildPostsView())
           ],)
       );
   }
@@ -368,35 +360,32 @@ class _UserScreenState extends State<UserScreen> {
 
     return ListView.builder(
           controller: _scrollController,
-          itemCount: _posts.length + (_isLastPage?0:1),
+          itemCount: _posts.length,
           itemBuilder: (context, index) {
 
-            if(index == _posts.length - _nextPageTrigger && !_isLastPage){
-              print("HERE");
-              fetchPage();
-            }
-
-            if (index == _posts.length) {
             if (_error) {
               return const Center(
                   child: Text("Error")
               );
             }
 
-            else {
-              return const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(8),
-                    child: CircularProgressIndicator(),
-                  ));
+            if(!_loading && !_error){
+              final Post post = _posts[index];
+              return Padding(
+                padding: const EdgeInsets.all(15.0),
+                child:PostCard(heading: post.heading, body: post.body, postId: post.postId, link: post.link, profilePath: widget.user.profilePath, datetime: post.timeCreated, likes: post.like,isLiked: true,)
+              );
+
             }
-          }
-            final Post post = _posts[index];
-            return Padding(
-              padding: const EdgeInsets.all(15.0),
-              child:PostCard(heading: post.heading, body: post.body, postId: post.postId, link: post.link, profilePath: widget.user.profilePath, datetime: post.timeCreated, likes: post.like)
-            );
+
+            return const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(8),
+                  child: CircularProgressIndicator(),
+                ));
           });
+
+
   }
 }
 

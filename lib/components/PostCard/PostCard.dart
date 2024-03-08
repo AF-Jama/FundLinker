@@ -3,19 +3,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fundlinker/utils/utils.dart';
+import 'package:like_button/like_button.dart';
 import '../../utils/firebase.dart';
 import 'dart:math';
 
 class PostCard extends StatefulWidget {
-  const PostCard({super.key, required this.heading, required this.body, required this.postId, required this.link, required this.profilePath, required this.datetime, required this.likes});
+  PostCard({super.key, required this.heading, required this.body, required this.postId, required this.link, this.profilePath, required this.datetime, required this.likes, required this.isLiked});
 
   final String heading;
   final String body;
   final String postId;
   final String link;
-  final String profilePath;
+  String? profilePath;
   final Timestamp datetime;
   final int likes;
+  final bool isLiked;
 
   @override
   State<PostCard> createState() => _PostCardState();
@@ -29,6 +31,8 @@ class _PostCardState extends State<PostCard> {
   Widget build(BuildContext context) {
     // bool isPostLiked = true;
     // int currentLikes = widget.likes;
+
+    print("Post is like status is ${widget.isLiked}");
     
     return Container(
       padding: const EdgeInsets.all(3.0),
@@ -37,7 +41,7 @@ class _PostCardState extends State<PostCard> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CircleAvatar(backgroundImage: (widget.profilePath!=null)?NetworkImage(widget.profilePath!):const AssetImage("assets/images/person.jpg") as ImageProvider ,),
+              CircleAvatar(backgroundImage: (widget.profilePath!=null)?NetworkImage(widget.profilePath!):const AssetImage("assets/images/default-user.jpg") as ImageProvider ,),
     
               const SizedBox(width: 20,),
     
@@ -66,31 +70,35 @@ class _PostCardState extends State<PostCard> {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              GestureDetector(onTap: () async {
-                try {
-                  final isPostLiked = await Firestore.isPostLiked(widget.postId, Authentication.uid!);
+              LikeButton(
+                animationDuration: const Duration(seconds: 1)
+                ,likeCount: widget.likes
+                ,isLiked: widget.isLiked,
+                onTap: (isLiked) async {
+                  // triggered on tap to implement user post like and unliking
+                  try {
+                  // final isPostLiked = await Firestore.isPostLiked(widget.postId, Authentication.uid!);
+              
+                  if(isLiked){
+                    // triggered on unlike
+                    await Firestore.removeLikePost(Authentication.uid!, widget.postId);
 
-                  if(!isPostLiked){
-                    await Firestore.likePost(Authentication.uid!,widget.postId);
-                    setState(() {
-                      // likes = likes +1;
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Liked Post")));
-                    return;
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Unliked Post")));
                   } 
 
-                  await Firestore.removeLikePost(Authentication.uid!, widget.postId);
-                  setState(() {
-                      // likes = likes +1;
-                    });
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Unliked Post")));
-                  return;
+                  if(!isLiked){
+                    // triggered on like
+                    await Firestore.likePost(Authentication.uid!,widget.postId);
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Liked Post")));
+
+                  }
+
+                  return !isLiked;
                 } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Could not like post with id ${widget.postId}")));
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Could not like or unlike post with id: try again ${widget.postId}")));
+                  return null;
                 }
-              },child: Image.asset("assets/images/heart.png",height: 20,width: 20,)),
-              const SizedBox(width: 6,),
-              Text("${widget.likes}",style: const TextStyle(color: Colors.black,fontWeight: FontWeight.bold,fontSize: 14.0),)
+                },),
             ],),
     
           const SizedBox(height: 6),
