@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:fundlinker/screens/CreateScreen/CreateScreen.dart';
 import 'package:fundlinker/screens/FollowerPostsScreen/FollowerPostsScreen.dart';
 import 'package:fundlinker/screens/SearchScreen/SearchScreen.dart';
+import 'package:fundlinker/utils/utils.dart';
+import '../../utils/firebase.dart';
 // import 'package:fundlinker/screens/ProfileScreen/ProfileScreen.dart';
 // import 'package:fundlinker/screens/RecommendedScreen/RecommendedScreen.dart';
 import 'package:fundlinker/screens/UserScreen/UserScreen.dart';
@@ -37,7 +39,7 @@ class BottomNav extends StatelessWidget {
       ),
     ],
     
-    onTap: (value) {
+    onTap: (value) async {
 
       if(value==0){
         Navigator.of(context).push(MaterialPageRoute(builder: (context) => const SearchScreen() ,));
@@ -48,7 +50,8 @@ class BottomNav extends StatelessWidget {
       }
 
       if(value==2){
-        Navigator.of(context).push(MaterialPageRoute(builder: (context) => const CreateScreen() ,));
+        final user = await Firestore.getUser(Authentication.uid!);
+        Navigator.of(context).push(MaterialPageRoute(builder: (context) => UserScreen(user: user) ,));
       }
     },
     );

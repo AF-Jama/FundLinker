@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:redis/redis.dart';
+// import 'package:redis/redis.dart';
 import '../../utils/utils.dart';
 
 class RecommendedScreen extends StatefulWidget {
@@ -14,9 +14,6 @@ class _RecommendedScreenState extends State<RecommendedScreen> {
   @override
   void initState() {
     // TODO: implement initState
-    late Future<Command> client;
-
-    client = Redis.getRedisClient();  
 
     super.initState();
   }

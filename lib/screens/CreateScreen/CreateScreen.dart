@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:fundlinker/components/LoadingCard/LoadingCard.dart';
 import 'package:fundlinker/screens/MainScreen/MainScreen.dart';
 import 'package:fundlinker/utils/firebase.dart';
 import 'package:fundlinker/utils/utils.dart';
@@ -22,6 +23,8 @@ class _CreateScreenState extends State<CreateScreen> {
   final headingController = TextEditingController(); // title controller
   final bodyController = TextEditingController(); // body controller
   final URLcontroller = TextEditingController(); // url controller
+
+  String urlString = '';
 
 
   @override
@@ -130,6 +133,9 @@ class _CreateScreenState extends State<CreateScreen> {
 
                 TextFormField(
                     controller: URLcontroller,
+                    onChanged: (value) => setState(() {
+                      urlString = value;
+                    }),
                   decoration: const InputDecoration(
                     border: UnderlineInputBorder(),
                     hintText: 'Enter URL of fundraiser(www.gofund.com/....)',
@@ -184,6 +190,82 @@ class _CreateScreenState extends State<CreateScreen> {
                 // ),
           
                 // ],))
+
+                // const Center(child: Text("SUCCESFULL"),)
+
+                const SizedBox(height: 10,),
+
+                FutureBuilder(
+                  future: getFundraiserData(urlString), 
+                  builder: (context, snapshot) {
+                    if(urlString.isEmpty){
+                      return const Center(child: Text("Enter Go Fund Me address to fetch data",style: TextStyle(fontSize: 18.0),));
+                    }
+
+                    if(snapshot.data==null){
+                      return const Center(child: Text("No data found, at this moment",style: TextStyle(fontSize: 17.0),));
+                    }
+                      
+                    if(snapshot.hasData){
+
+                      return SizedBox(
+                        height: 115,
+                        child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: [
+                          SizedBox(
+                            width: 220,
+                            child: Card(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                const ListTile(title: Text("Current Total"),leading: Icon(Icons.star),),
+                                Align(alignment: Alignment.center,child: Text(snapshot.data!.currentTotal,style: const TextStyle(fontSize: 18.0,fontWeight: FontWeight.bold,)))
+                              ],),),
+                          ),
+
+                          SizedBox(
+                            width: 220,
+                            child: Card(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                const ListTile(title: Text("Total Raised"),leading: Icon(Icons.monetization_on),),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(snapshot.data!.goal,style: const TextStyle(fontSize: 18.0,fontWeight: FontWeight.bold,))
+                                  ],)
+                              ],),),
+                          ),
+
+                        SizedBox(
+                          width: 220,
+                          child: Card(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                              const ListTile(title: Text("Donaters"),leading: Icon(Icons.person),),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(snapshot.data!.donaters,style: const TextStyle(fontSize: 18.0,fontWeight: FontWeight.bold,))
+                                ],)
+                            ],),),
+                        ),
+                          ]));
+                    }
+
+
+                  return Column(
+                  children: [
+                    LoadingCard(),
+                    LoadingCard(),
+                    LoadingCard(),
+                    LoadingCard(),
+                    LoadingCard(),
+                  ],);
+                  },)
           
               
             ]),

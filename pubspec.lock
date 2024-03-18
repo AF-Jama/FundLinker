@@ -608,6 +608,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.0"
+  redis_dart:
+    dependency: "direct main"
+    description:
+      name: redis_dart
+      sha256: "4de5252a1da7e602b619d71d7a43fe7df04fddfe3e1ae87e03b2f4ccb632f9cb"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0+4"
   shimmer:
     dependency: "direct main"
     description:

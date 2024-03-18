@@ -114,11 +114,13 @@ class _UserScreenState extends State<UserScreen> {
 
       final userPostss =  await userPosts.get(); // returns user posts document
 
-      final postList = userPostss.docs.map((post) {
+      final List<Post> postList = await Future.wait(userPostss.docs.map((post) async {
       final Map<String,dynamic> data = post.data() as Map<String,dynamic>;
+      
+      final isPostLiked = await Firestore.isPostLiked(post.id, widget.user.uid);
 
-      return Post(imgPath: data['link'], heading: data['heading'], body: data['body'], postId: post.id, link: data['link'],timeCreated: data['time_created'],like: data['likes'],isLiked: true);
-    },).toList();
+      return Post(imgPath: data['link'], heading: data['heading'], body: data['body'], postId: post.id, link: data['link'],timeCreated: data['time_created'],like: data['likes'],isLiked: isPostLiked);
+    },).toList());
 
       setState(() {
         _isLastPage = postList.length < _numberOfPostsPerRequest; // if posts returned is less than number of posts per page, this signifies that it is last page
@@ -348,13 +350,25 @@ class _UserScreenState extends State<UserScreen> {
   }
 
   Widget buildPostsView(){
-    if(_posts.isEmpty){
-      if(_loading){
-        return const Center(child: CircularProgressIndicator(),);
-      }else if(_error){
-        return const Center(child: Text("Error fetching"));
-      }
+    // if(_posts.isEmpty){
+    //   if(_loading){
+    //     return const Center(child: CircularProgressIndicator(),);
+    //   }else if(_error){
+    //     return const Center(child: Text("Error fetching"));
+    //   }
 
+    //   return const Center(child: Text("Could not find posts"),);
+    // }
+
+    if(_loading){
+        return const Center(child: CircularProgressIndicator(),);
+    }
+
+    if(_error){
+        return const Center(child: Text("Error fetching"));
+    }
+
+    if (_posts.isEmpty) {
       return const Center(child: Text("Could not find posts"),);
     }
 
@@ -373,7 +387,7 @@ class _UserScreenState extends State<UserScreen> {
               final Post post = _posts[index];
               return Padding(
                 padding: const EdgeInsets.all(15.0),
-                child:PostCard(heading: post.heading, body: post.body, postId: post.postId, link: post.link, profilePath: widget.user.profilePath, datetime: post.timeCreated, likes: post.like,isLiked: true,)
+                child:PostCard(heading: post.heading, body: post.body, postId: post.postId, link: post.link, profilePath: widget.user.profilePath, datetime: post.timeCreated, likes: post.like,isLiked: post.isLiked,)
               );
 
             }

@@ -1,10 +1,14 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:redis/redis.dart';
+// import 'package:redis/redis.dart';
+import 'package:redis_dart/redis_dart.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
 
@@ -48,16 +52,18 @@ class Authentication{
 }
 
 
+late RedisClient client; // redis client
+
 class Redis{
 
+  static Future<RedisClient> getRedisClient() async {
+    // final conn = RedisConnection();
 
-  static Future<Command> getRedisClient() async {
-    final conn = RedisConnection();
-
-    Command client = await conn.connect('192.168.0.100', '6379'); // connecting to redis server on host 192.168.0.100 and port 6379
+    client =  await RedisClient.connect('192.168.0.100', 6379);
 
     return client;
   }
+
 }
 
 // Future<void> getLostData() async {
@@ -101,6 +107,38 @@ class AppUser{
   List<dynamic>? following; // following id list, List<String>? ???
 
 
+}
+
+class Scrape{
+  Scrape({ required this.currentTotal, required this.donaters, required this.goal, required this.title  });
+
+  final String currentTotal;
+  final String donaters;
+  final String goal;
+  final String title;
+  
+}
+
+Future<Scrape?> getFundraiserData(String url) async {
+  try{
+    final response = await http.get(Uri.parse("http://10.0.2.2:5000/data?url=https://$url"));
+
+    if(response.statusCode==200){
+      final Map<String,dynamic> data = jsonDecode(response.body) as Map<String,dynamic>;
+
+      if(data['status']==400){
+        throw Exception("Unable to fetch data");
+      }
+
+      return Scrape(currentTotal: data['data']['current_total'], donaters: data['data']['donaters'], goal: data['data']['goal'], title: data['data']['title']);
+    }else{
+      throw Exception("Could not fetch fundraiser data");
+    }
+
+
+  }catch(error){
+    return null;
+  }
 }
 
 

@@ -8,6 +8,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+// import 'package:redis/redis.dart';
+import 'package:redis_dart/redis_dart.dart';
 import 'utils/firebase.dart';
 import 'firebase_options.dart';
 
@@ -17,6 +19,7 @@ void main() async {
   options: DefaultFirebaseOptions.currentPlatform,
 
   );
+  // final RedisClient client  = await Redis.getRedisClient();
   // await connectToFirebaseEmulator();
   runApp(const MyApp());
 }

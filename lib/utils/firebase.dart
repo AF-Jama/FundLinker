@@ -21,6 +21,15 @@ class Firestore{
 
 
   static Future<void> createAccount(String uid,String firstName,String lastName,String username,String? profilePath) async {
+
+    await client.setMap("user:$uid", {
+      'firstName':firstName,
+      'lastName':lastName,
+      'profilePath':(profilePath==null)?"":profilePath,
+      'username':username,
+      "followers":0,
+      "following":0
+    }); // sets user data cache
     
     return await users.doc(uid).set(<String, dynamic>{
       'firstName':firstName,
@@ -45,8 +54,11 @@ class Firestore{
 
   static Future<void> likePost(String uid,String postId) async {
     final DocumentReference<Object?> user = users.doc(uid); // reference to user document
+    final DocumentReference<Object?> post = posts.doc(postId); // reference to post document
 
     await user.update({"likes": FieldValue.arrayUnion([postId])}); // updates likes field with postId
+
+    await post.update({"likes":FieldValue.increment(1)}); // increments
     
   }
 
@@ -72,8 +84,11 @@ class Firestore{
 
   static Future<void> removeLikePost(String uid,String postId) async {
     final DocumentReference<Object?> user = users.doc(uid); // returns reference to user document
+    final post = posts.doc(postId);
 
     await user.update({"likes":FieldValue.arrayRemove([postId])}); // updates likes field with removing postId 
+
+    await post.update({"likes":FieldValue.increment(-1)}); // decrements
   }
 
   static Future<List<Post>> getPosts() async { // returns promise, list of posts or null
@@ -130,7 +145,7 @@ class Firestore{
 
       final userUid = postData['uid']; // user id of post document
 
-      final userData = await Firestore.getUser(userUid); // returns user object
+      final userData = await Firestore.getUser(userUid); // returns user object ?? cache
 
       final isPostLiked = await Firestore.isPostLiked(post.id, uid); // returns bool if post is liked
 

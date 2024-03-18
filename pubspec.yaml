@@ -50,6 +50,7 @@ dependencies:
   infinite_scroll_pagination: ^4.0.0
   http: ^1.2.0
   like_button: ^2.0.5
+  redis_dart: ^0.1.0+4
 
 dev_dependencies:
   flutter_test:
