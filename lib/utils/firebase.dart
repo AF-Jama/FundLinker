@@ -40,7 +40,22 @@ class Firestore{
     });
   }
 
-  static Future<DocumentReference<Object?>> addPost(String heading, String body,String uid,String link) async {
+  static Future<DocumentReference<Object?>> addPost(String heading, String body,String uid,String link,String identifier,Scrape data) async {
+    // print("fundraiser:$identifier");
+
+    final Map<String,dynamic> mapData = {
+      'donaters': data.donaters,
+      'goal': data.goal,
+      'hero': data.hero,
+      'identifer': data.identifier,
+      'title': data.title,
+      'currentTotal': data.currentTotal,
+    };
+
+    await client.setMap("fundraiser:$identifier",mapData); // sets fundraiser hash map
+
+    await client.close();
+
     return await posts.add(<String,dynamic>{
       'heading':heading,
       'body':body,
@@ -49,6 +64,7 @@ class Firestore{
       // 'dislikes':0,
       'time_created':DateTime.now(),
       'link':link,
+      'hero_image':data.hero
     });
   }
 
@@ -108,7 +124,7 @@ class Firestore{
 
       final isPostLiked = await Firestore.isPostLiked(post.id, userUid); // returns bool if post is liked
 
-      return Post(imgPath: userData.profilePath, heading: postData['heading'], body: postData['body'], postId: post.id, link: postData['link'],timeCreated: postData['time_created'],like: postData['likes'],isLiked: isPostLiked);
+      return Post(imgPath: userData.profilePath, heading: postData['heading'], body: postData['body'], postId: post.id, link: postData['link'], hero: postData['hero_image'] ,timeCreated: postData['time_created'],like: postData['likes'],isLiked: isPostLiked);
 
     },).toList());
 
@@ -143,13 +159,15 @@ class Firestore{
     return Future.wait(userPostss.docs.map((post) async {
       final Map<String,dynamic> postData = post.data() as Map<String,dynamic>;
 
+      print(postData);
+
       final userUid = postData['uid']; // user id of post document
 
       final userData = await Firestore.getUser(userUid); // returns user object ?? cache
 
       final isPostLiked = await Firestore.isPostLiked(post.id, uid); // returns bool if post is liked
 
-      return Post(imgPath: userData.profilePath, heading: postData['heading'], body: postData['body'], postId: post.id, link: postData['link'],timeCreated: postData['time_created'],like: postData['likes'],isLiked: isPostLiked);
+      return Post(imgPath: userData.profilePath, heading: postData['heading'], body: postData['body'], postId: post.id, link: postData['link'], hero: postData['hero_image'],timeCreated: postData['time_created'],like: postData['likes'],isLiked: isPostLiked);
 
     },).toList());
 
@@ -177,7 +195,7 @@ class Firestore{
     return userPosts.docs.map((post) {
       final Map<String,dynamic> data = post.data() as Map<String,dynamic>;
 
-      return Post(imgPath: data['link'], heading: data['heading'], body: data['body'], postId: post.id, link: data['link'],timeCreated: data['time_created'],like: data['likes'],isLiked: true);
+      return Post(imgPath: data['link'], heading: data['heading'], body: data['body'], postId: post.id, link: data['link'], hero: data['hero_image'],timeCreated: data['time_created'],like: data['likes'],isLiked: true);
     },).toList();
 
     
@@ -289,6 +307,17 @@ class Firestore{
     final List<dynamic>? followingList = data['following'];
 
     return (followingList==null)?0:followingList.length; // returns 0 if following list is null (signifying user is following no one) or returns following list length
+    
+  }
+
+  static Future<int> getNumberOfPosts(String uid) async {
+    // returns number of user posts
+    final userPosts = await posts
+    .where("uid",isEqualTo: uid)
+    .get();
+
+    return userPosts.docs.length; // return number of user posts
+
     
   }
 

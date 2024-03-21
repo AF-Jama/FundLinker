@@ -82,7 +82,7 @@ class Redis{
 
 
 class Post{
-  Post({ this.imgPath, required this.heading, required this.body, required this.postId, required this.link, required this.like ,required this.timeCreated, required this.isLiked });
+  Post({ this.imgPath, required this.heading, required this.body, required this.postId, required this.link, required this.like , required this.hero,required this.timeCreated, required this.isLiked });
 
   String? imgPath; // img path can be actual path or null
   final String heading;
@@ -90,6 +90,7 @@ class Post{
   final String postId;
   final String link;
   final int like;
+  final String hero;
   final Timestamp timeCreated;
   final bool isLiked;
 }
@@ -110,12 +111,14 @@ class AppUser{
 }
 
 class Scrape{
-  Scrape({ required this.currentTotal, required this.donaters, required this.goal, required this.title  });
+  Scrape({ required this.currentTotal, required this.donaters, required this.goal, required this.title, required this.hero, required this.identifier  });
 
   final String currentTotal;
   final String donaters;
   final String goal;
   final String title;
+  final String hero;
+  final String identifier;
   
 }
 
@@ -130,7 +133,7 @@ Future<Scrape?> getFundraiserData(String url) async {
         throw Exception("Unable to fetch data");
       }
 
-      return Scrape(currentTotal: data['data']['current_total'], donaters: data['data']['donaters'], goal: data['data']['goal'], title: data['data']['title']);
+      return Scrape(currentTotal: data['data']['current_total'], donaters: data['data']['donaters'], goal: data['data']['goal'], title: data['data']['title'],hero: data['data']['hero'],identifier: data['data']['identifer']);
     }else{
       throw Exception("Could not fetch fundraiser data");
     }

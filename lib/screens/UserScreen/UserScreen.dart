@@ -119,7 +119,7 @@ class _UserScreenState extends State<UserScreen> {
       
       final isPostLiked = await Firestore.isPostLiked(post.id, widget.user.uid);
 
-      return Post(imgPath: data['link'], heading: data['heading'], body: data['body'], postId: post.id, link: data['link'],timeCreated: data['time_created'],like: data['likes'],isLiked: isPostLiked);
+      return Post(imgPath: data['link'], heading: data['heading'], body: data['body'], postId: post.id, link: data['link'], hero: data['hero_image'],timeCreated: data['time_created'],like: data['likes'],isLiked: isPostLiked);
     },).toList());
 
       setState(() {
@@ -387,7 +387,7 @@ class _UserScreenState extends State<UserScreen> {
               final Post post = _posts[index];
               return Padding(
                 padding: const EdgeInsets.all(15.0),
-                child:PostCard(heading: post.heading, body: post.body, postId: post.postId, link: post.link, profilePath: widget.user.profilePath, datetime: post.timeCreated, likes: post.like,isLiked: post.isLiked,)
+                child:PostCard(heading: post.heading, body: post.body, postId: post.postId, link: post.link, hero: post.hero ,profilePath: widget.user.profilePath, datetime: post.timeCreated, likes: post.like,isLiked: post.isLiked,)
               );
 
             }

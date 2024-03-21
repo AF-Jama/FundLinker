@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:fundlinker/components/LoadingCard/LoadingCard.dart';
+import 'package:fundlinker/components/LoadingStats/LoadingStats.dart';
 import 'package:fundlinker/screens/MainScreen/MainScreen.dart';
 import 'package:fundlinker/utils/firebase.dart';
 import 'package:fundlinker/utils/utils.dart';
@@ -25,6 +26,8 @@ class _CreateScreenState extends State<CreateScreen> {
   final URLcontroller = TextEditingController(); // url controller
 
   String urlString = '';
+  bool isDataFound = false; // is data found state
+  Scrape? scrapeData; // scrape data state
 
 
   @override
@@ -47,8 +50,8 @@ class _CreateScreenState extends State<CreateScreen> {
           
                   ElevatedButton(
                     onPressed: () async {
-                      if(_formKey.currentState!.validate()){
-                        // triggered if descendants of form widget return true
+                      if(_formKey.currentState!.validate() && isDataFound){
+                        // triggered if descendants of form widget return true and data is found
                         try{
                           // throw "Error";
                           setState(() {
@@ -56,7 +59,7 @@ class _CreateScreenState extends State<CreateScreen> {
                           });
 
                           
-                          await Firestore.addPost(headingController.value.text, bodyController.value.text, Authentication.uid!,URLcontroller.value.text);
+                          await Firestore.addPost(headingController.value.text, bodyController.value.text, Authentication.uid!,URLcontroller.value.text,scrapeData!.identifier,scrapeData!);
 
                           setState(() {
                             isSubmitting = false;
@@ -65,11 +68,16 @@ class _CreateScreenState extends State<CreateScreen> {
                           Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => const MainScreen(),), (route) => false);
 
                         }catch(error){
+                          print(error);
                           setState(() {
                             isSubmitting = false;
                           });
                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Error posting, please try again later")));
                         }
+                      }
+
+                      else{
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Fundraiser data not found")));
                       }
 
                       
@@ -99,7 +107,7 @@ class _CreateScreenState extends State<CreateScreen> {
                     border: OutlineInputBorder(),
                     hintText: 'Enter title body',
                   ),
-                  maxLength: 100,
+                  maxLength: 40,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Enter title body';
@@ -195,18 +203,36 @@ class _CreateScreenState extends State<CreateScreen> {
 
                 const SizedBox(height: 10,),
 
+                // if(isDataFound)
+                //   Text("SUCCESFULL"),
+
+                // const SizedBox(height: 10,),
+
                 FutureBuilder(
                   future: getFundraiserData(urlString), 
                   builder: (context, snapshot) {
                     if(urlString.isEmpty){
+                      isDataFound = false;
+                      scrapeData = null;
                       return const Center(child: Text("Enter Go Fund Me address to fetch data",style: TextStyle(fontSize: 18.0),));
                     }
 
-                    if(snapshot.data==null){
-                      return const Center(child: Text("No data found, at this moment",style: TextStyle(fontSize: 17.0),));
-                    }
+                      if(snapshot.data==null){
+                        isDataFound = false;
+                        scrapeData = null;
+                        return const Center(child: Text("No data found, at this moment",style: TextStyle(fontSize: 17.0),));
+                      }
                       
                     if(snapshot.hasData){
+                      
+                      isDataFound = true;
+                      scrapeData = Scrape(
+                      currentTotal: snapshot.data!.currentTotal, 
+                      donaters: snapshot.data!.donaters, 
+                      goal: snapshot.data!.goal , 
+                      title: snapshot.data!.title, 
+                      hero: snapshot.data!.hero, 
+                      identifier: snapshot.data!.identifier);
 
                       return SizedBox(
                         height: 115,
@@ -256,15 +282,21 @@ class _CreateScreenState extends State<CreateScreen> {
                           ]));
                     }
 
+                    isDataFound = false;
+                    scrapeData = null;
 
-                  return Column(
-                  children: [
-                    LoadingCard(),
-                    LoadingCard(),
-                    LoadingCard(),
-                    LoadingCard(),
-                    LoadingCard(),
-                  ],);
+
+                  return SizedBox(
+                    height: 115 ,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: const [
+                        LoadingState(),
+                        LoadingState(),
+                        LoadingState()
+                      ],
+                    ),
+                  );
                   },)
           
               

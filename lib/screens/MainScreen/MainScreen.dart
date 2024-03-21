@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fundlinker/components/LoadingCard/LoadingCard.dart';
+import 'package:fundlinker/components/LoadingStats/LoadingStats.dart';
 import 'package:fundlinker/utils/utils.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:fundlinker/utils/firebase.dart';
@@ -91,64 +92,83 @@ class _MainScreenState extends State<MainScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(
-                height: 115,
-                child: ListView(
-                  
-                
-                  scrollDirection: Axis.horizontal,
-                  children: const [
-                    SizedBox(
-                      width: 220,
-                      child: Card(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                          ListTile(title: Text("Total Fundraisers"),leading: Icon(Icons.star),),
-                          Align(alignment: Alignment.center,child: Text("4",style: TextStyle(fontSize: 18.0,fontWeight: FontWeight.bold,)))
-                        ],),),
-                    ),
+              FutureBuilder(
+                future: Future.wait([Firestore.getNumberOfPosts(Authentication.uid!),Firestore.getUserFollowersCount(Authentication.uid!)]),
+                builder: (context, snapshot) {
+                  if(snapshot.hasData){
+                    return SizedBox(
+                      height: 115,
+                      child: ListView(
+                        
+                      
+                        scrollDirection: Axis.horizontal,
+                        children: [
+                          SizedBox(
+                            width: 220,
+                            child: Card(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                const ListTile(title: Text("Total Fundraisers"),leading: Icon(Icons.star),),
+                                Align(alignment: Alignment.center,child: Text("${snapshot.data![0]}",style: const TextStyle(fontSize: 18.0,fontWeight: FontWeight.bold,)))
+                              ],),),
+                          ),
+                    
+                          const SizedBox(
+                            width: 220,
+                            child: Card(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                ListTile(title: Text("Total Raised"),leading: Icon(Icons.monetization_on),),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text("£4000",style: TextStyle(fontSize: 18.0,fontWeight: FontWeight.bold,))
+                                  ],)
+                              ],),),
+                          ),
+                    
+                          SizedBox(
+                            width: 220,
+                            child: Card(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                const ListTile(title: Text("Followers"),leading: Icon(Icons.person),),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text("${snapshot.data![1]}",style: const TextStyle(fontSize: 18.0,fontWeight: FontWeight.bold,))
+                                  ],)
+                              ],),),
+                          ),
+                    
+                          // SizedBox(
+                          //   width: 200,
+                          //   child: Card(
+                          //     child: Column(
+                          //       crossAxisAlignment: CrossAxisAlignment.start,
+                          //       children: [
+                          //       ListTile(title: Text("Card 4"),leading: Icon(Icons.album),)
+                          //     ],),),
+                          // )
+                        ]) ,);
+                  }
 
-                    SizedBox(
-                      width: 220,
-                      child: Card(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                          ListTile(title: Text("Total Raised"),leading: Icon(Icons.monetization_on),),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text("£4000",style: TextStyle(fontSize: 18.0,fontWeight: FontWeight.bold,))
-                            ],)
-                        ],),),
+                  return SizedBox(
+                    height: 115 ,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: const [
+                        LoadingState(),
+                        LoadingState(),
+                        LoadingState()
+                      ],
                     ),
-
-                    SizedBox(
-                      width: 220,
-                      child: Card(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                          ListTile(title: Text("Followers"),leading: Icon(Icons.person),),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text("400",style: TextStyle(fontSize: 18.0,fontWeight: FontWeight.bold,))
-                            ],)
-                        ],),),
-                    ),
-
-                    // SizedBox(
-                    //   width: 200,
-                    //   child: Card(
-                    //     child: Column(
-                    //       crossAxisAlignment: CrossAxisAlignment.start,
-                    //       children: [
-                    //       ListTile(title: Text("Card 4"),leading: Icon(Icons.album),)
-                    //     ],),),
-                    // )
-                  ]) ,),
+                  );
+                }, 
+              ),
 
                   const SizedBox(height: 20,),
 
@@ -260,15 +280,76 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Widget userFeed(){
-    if(_posts.isEmpty){
-      if(!_loading && !_error){
-        return const Center(child: Text("You have no posts in your feed") ,);
-      }
+    // if(_posts.isEmpty){
+    //   if(!_loading && !_error){
+    //     return const Center(child: Text("You have no posts in your feed") ,);
+    //   }
+
+    //   if(_loading){
+    //     return const Center(child: CircularProgressIndicator(),);
+    //   }else if(_error){
+    //     return const Center(child: Text("Error fetching"));
+    //   }
+
+    //   return Column(
+    //     children: [
+    //       LoadingCard(),
+    //       LoadingCard(),
+    //       LoadingCard(),
+    //       LoadingCard(),
+    //       LoadingCard(),
+    //     ],);
+    // }
 
       if(_loading){
         return const Center(child: CircularProgressIndicator(),);
-      }else if(_error){
+      }
+
+      if(_error){
         return const Center(child: Text("Error fetching"));
+      }
+
+      if(_isLastPage && _posts.isEmpty){
+        return const Center(child: Text("End of feed"));
+      }
+
+      if(!_loading && !_error){
+        if(_posts.isEmpty){
+          return const Center(child: Text("You have no posts in your feed") ,);
+        }else{
+
+            return ListView.builder(
+                  controller: _scrollController,
+                  itemCount: _posts.length,
+                  itemBuilder: (context, index) {
+
+                    // if (_error) {
+                    //   return const Center(
+                    //       child: Text("Error")
+                    //   );
+                    // }
+
+                      final Post post = _posts[index];
+                      return Padding(
+                        padding: const EdgeInsets.all(15.0),
+                        child:PostCard(heading: post.heading, body: post.body, postId: post.postId, link: post.link, hero: post.hero ,profilePath: post.imgPath, datetime: post.timeCreated, likes: post.like,isLiked: post.isLiked,)
+                      );
+                    // if(!_loading && !_error){
+                    //   final Post post = _posts[index];
+                    //   return Padding(
+                    //     padding: const EdgeInsets.all(15.0),
+                    //     child:PostCard(heading: post.heading, body: post.body, postId: post.postId, link: post.link, hero: post.hero ,profilePath: post.imgPath, datetime: post.timeCreated, likes: post.like,isLiked: post.isLiked,)
+                    //   );
+
+                    // }
+
+                    // return const Center(
+                    //     child: Padding(
+                    //       padding: EdgeInsets.all(8),
+                    //       child: CircularProgressIndicator(),
+                    //     ));
+                  });
+        }
       }
 
       return Column(
@@ -279,34 +360,7 @@ class _MainScreenState extends State<MainScreen> {
           LoadingCard(),
           LoadingCard(),
         ],);
-    }
 
-    return ListView.builder(
-          controller: _scrollController,
-          itemCount: _posts.length,
-          itemBuilder: (context, index) {
-
-            if (_error) {
-              return const Center(
-                  child: Text("Error")
-              );
-            }
-
-            if(!_loading && !_error){
-              final Post post = _posts[index];
-              return Padding(
-                padding: const EdgeInsets.all(15.0),
-                child:PostCard(heading: post.heading, body: post.body, postId: post.postId, link: post.link, profilePath: post.imgPath, datetime: post.timeCreated, likes: post.like,isLiked: post.isLiked,)
-              );
-
-            }
-
-            return const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(8),
-                  child: CircularProgressIndicator(),
-                ));
-          });
 
 
   }
