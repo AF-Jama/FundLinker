@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fundlinker/components/LoadingCard/LoadingCard.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../utils/utils.dart';
 
 class PostScreen extends StatefulWidget {
@@ -138,7 +139,24 @@ class _PostScreenState extends State<PostScreen> {
                       LoadingCard(),
                       LoadingCard(),
                     ],);
-                    },)
+                    },),
+
+                    const SizedBox(height: 10,),
+
+                    ElevatedButton(onPressed: () async {
+                      try{
+                        await launchEndpoint(widget.post.link);
+                      }catch(error){
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Cannot Go to Fundraiser")));
+                      }
+                    }, style: ElevatedButton.styleFrom(
+                      backgroundColor:Colors.blue[700],
+                      foregroundColor: Colors.black,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                      ),
+                      
+                      ), child: const Text("Go To Fundraiser"))
             ],
           ),
         )],

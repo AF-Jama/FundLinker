@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:fundlinker/screens/AuthScreen/AuthScreen.dart';
 import '../PulsatingSplashScreen/PulsatingSplashScreen.dart';
 import 'package:fundlinker/screens/SplashScreen/SplashScreen.dart';
 import 'package:fundlinker/utils/firebase.dart';
@@ -278,7 +279,22 @@ class _UserScreenState extends State<UserScreen> {
                       }, style: const ButtonStyle(backgroundColor: MaterialStatePropertyAll(Colors.white),shape: MaterialStatePropertyAll(RoundedRectangleBorder(side: BorderSide(width: 2.0,color: Colors.transparent),borderRadius: BorderRadius.all(Radius.circular(6.0)) ),),),child: const Text("Follow",style: TextStyle(color: Colors.green,fontWeight: FontWeight.w600),),)
                     )
                       else
-                        const ElevatedButton(onPressed: null, style: const ButtonStyle(backgroundColor: MaterialStatePropertyAll(Colors.white),shape: MaterialStatePropertyAll(RoundedRectangleBorder(side: BorderSide(width: 2.0,color: Colors.transparent),borderRadius: BorderRadius.all(Radius.circular(6.0)))) ),child: const Text("Settings",style: TextStyle(color: Colors.green,fontWeight: FontWeight.w600),),)
+                        Column(
+                          children: [
+                            const ElevatedButton(onPressed: null, style: const ButtonStyle(backgroundColor: MaterialStatePropertyAll(Colors.white),shape: MaterialStatePropertyAll(RoundedRectangleBorder(side: BorderSide(width: 2.0,color: Colors.transparent),borderRadius: BorderRadius.all(Radius.circular(6.0)))) ),child: const Text("Settings",style: TextStyle(color: Colors.green,fontWeight: FontWeight.w600),),),
+                            ElevatedButton(onPressed: () async {
+                              try{
+                                await Authentication.googleSignOut();
+                                Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => const AuthScreen(),), (route) => false);
+
+                              }catch(error){
+                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Error Signing out")));
+                              }
+                            }, style: const ButtonStyle(backgroundColor: MaterialStatePropertyAll(Colors.red),shape: MaterialStatePropertyAll(RoundedRectangleBorder(side: BorderSide(width: 2.0,color: Colors.transparent),borderRadius: BorderRadius.all(Radius.circular(6.0)))) ),child: const Text("Logout",style: TextStyle(color: Colors.white,fontWeight: FontWeight.w600),),),
+                          ],
+                        )
+
+
                    ],)
                  ],),
         

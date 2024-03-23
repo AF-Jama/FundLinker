@@ -10,6 +10,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:redis_dart/redis_dart.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 
 class Authentication{
@@ -124,7 +125,7 @@ class Scrape{
 
 Future<Scrape?> getFundraiserData(String url) async {
   try{
-    final response = await http.get(Uri.parse("http://10.0.2.2:5000/data?url=https://$url"));
+    final response = await http.get(Uri.parse("https://dataserver-seven.vercel.app/data?url=https://$url"));
 
     if(response.statusCode==200){
       final Map<String,dynamic> data = jsonDecode(response.body) as Map<String,dynamic>;
@@ -141,6 +142,14 @@ Future<Scrape?> getFundraiserData(String url) async {
 
   }catch(error){
     return null;
+  }
+}
+
+Future<void> launchEndpoint(String _url) async {
+  if (await canLaunchUrl(Uri.parse("https://$_url"))) {
+    await launchUrl(Uri.parse("https://$_url"));
+  } else {
+    throw 'Could not launch $_url';
   }
 }
 

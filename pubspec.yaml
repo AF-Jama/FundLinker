@@ -51,6 +51,7 @@ dependencies:
   http: ^1.2.0
   like_button: ^2.0.5
   redis_dart: ^0.1.0+4
+  url_launcher: ^6.2.5
 
 dev_dependencies:
   flutter_test:
