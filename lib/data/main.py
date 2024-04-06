@@ -22,6 +22,7 @@ def get_data():
         number_of_donations = soup.select(".hrt-text-gray-dark")
         title = soup.select(".p-campaign-header h1")
         goal = soup.select(".hrt-text-body-sm")
+        hero_img = soup.select(".campaign-hero_image__J8h8b img")
 
         current_total = current_total[0].text # current total
 
@@ -32,16 +33,26 @@ def get_data():
         pattern = r'\b\d{1,3}(?:,\d{3})*(?:\.\d+)?\b' # regex pattern to match and return numbers within target goal
 
         goal = re.search(pattern=pattern,string=goal[0].text)
+        
+        currency = current_total[0]
+
+        current_total = current_total[1:]
+
+        hero_img = hero_img[0].get('src')
+
+        domain,identifier = url.split('/f/') # splits endpoint to domain and unique identifier
 
         
 
         return {
             "message":"Succesfull fetch",
             "data":{
-                "current_total":current_total,
+                "current_total":f'{current_total} {currencyMap[currency]}', 
                 "donaters": number_of_donations,
                 "title":title,
-                "goal":goal.group()
+                "goal":f'{goal.group()} {currencyMap[currency]}',
+                "hero":hero_img,
+                "identifer":identifier
             },
             "status":200
         }
@@ -49,7 +60,13 @@ def get_data():
     except:
         ''' triggered on exception within try block '''
         return {
-            "data":[],
+            "data":{},
             "message":"Error fetching data",
             "status":400
         }
+
+
+currencyMap = {
+    "£":"GBP",
+    "$":"USD"
+}

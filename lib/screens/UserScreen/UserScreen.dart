@@ -2,6 +2,9 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:fundlinker/screens/AuthScreen/AuthScreen.dart';
+import 'package:fundlinker/screens/FollowerScreen/FollowerScreen.dart';
+import 'package:fundlinker/screens/FollowingScreen/FollowingScreen.dart';
 import '../PulsatingSplashScreen/PulsatingSplashScreen.dart';
 import 'package:fundlinker/screens/SplashScreen/SplashScreen.dart';
 import 'package:fundlinker/utils/firebase.dart';
@@ -119,7 +122,7 @@ class _UserScreenState extends State<UserScreen> {
       
       final isPostLiked = await Firestore.isPostLiked(post.id, widget.user.uid);
 
-      return Post(imgPath: data['link'], heading: data['heading'], body: data['body'], postId: post.id, link: data['link'],timeCreated: data['time_created'],like: data['likes'],isLiked: isPostLiked);
+      return Post(imgPath: data['link'], heading: data['heading'], body: data['body'], postId: post.id, link: data['link'], hero: data['hero_image'],timeCreated: data['time_created'],like: data['likes'],isLiked: isPostLiked);
     },).toList());
 
       setState(() {
@@ -278,7 +281,22 @@ class _UserScreenState extends State<UserScreen> {
                       }, style: const ButtonStyle(backgroundColor: MaterialStatePropertyAll(Colors.white),shape: MaterialStatePropertyAll(RoundedRectangleBorder(side: BorderSide(width: 2.0,color: Colors.transparent),borderRadius: BorderRadius.all(Radius.circular(6.0)) ),),),child: const Text("Follow",style: TextStyle(color: Colors.green,fontWeight: FontWeight.w600),),)
                     )
                       else
-                        const ElevatedButton(onPressed: null, style: const ButtonStyle(backgroundColor: MaterialStatePropertyAll(Colors.white),shape: MaterialStatePropertyAll(RoundedRectangleBorder(side: BorderSide(width: 2.0,color: Colors.transparent),borderRadius: BorderRadius.all(Radius.circular(6.0)))) ),child: const Text("Settings",style: TextStyle(color: Colors.green,fontWeight: FontWeight.w600),),)
+                        Column(
+                          children: [
+                            const ElevatedButton(onPressed: null, style: const ButtonStyle(backgroundColor: MaterialStatePropertyAll(Colors.white),shape: MaterialStatePropertyAll(RoundedRectangleBorder(side: BorderSide(width: 2.0,color: Colors.transparent),borderRadius: BorderRadius.all(Radius.circular(6.0)))) ),child: const Text("Settings",style: TextStyle(color: Colors.green,fontWeight: FontWeight.w600),),),
+                            ElevatedButton(onPressed: () async {
+                              try{
+                                await Authentication.googleSignOut();
+                                Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => const AuthScreen(),), (route) => false);
+
+                              }catch(error){
+                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Error Signing out")));
+                              }
+                            }, style: const ButtonStyle(backgroundColor: MaterialStatePropertyAll(Colors.red),shape: MaterialStatePropertyAll(RoundedRectangleBorder(side: BorderSide(width: 2.0,color: Colors.transparent),borderRadius: BorderRadius.all(Radius.circular(6.0)))) ),child: const Text("Logout",style: TextStyle(color: Colors.white,fontWeight: FontWeight.w600),),),
+                          ],
+                        )
+
+
                    ],)
                  ],),
         
@@ -287,21 +305,27 @@ class _UserScreenState extends State<UserScreen> {
                  Row(
                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                    children: [
-                   Column(
-                     mainAxisAlignment: MainAxisAlignment.start,
-                     crossAxisAlignment: CrossAxisAlignment.start,
-                     children: [
-                       Text("$numberOfFollowers",style: TextStyle(color: Colors.white,fontSize: 18.0,fontWeight: FontWeight.bold)),
-                       const Text("Follower",style: TextStyle(color: Colors.white),),
-                   ],),
+                   GestureDetector(
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => FollowerScreen(),)),
+                     child: Column(
+                       mainAxisAlignment: MainAxisAlignment.start,
+                       crossAxisAlignment: CrossAxisAlignment.start,
+                       children: [
+                         Text("$numberOfFollowers",style: const TextStyle(color: Colors.white,fontSize: 18.0,fontWeight: FontWeight.bold)),
+                         const Text("Follower",style: TextStyle(color: Colors.white),),
+                     ],),
+                   ),
         
-                   Column(
-                     mainAxisAlignment: MainAxisAlignment.start,
-                     crossAxisAlignment: CrossAxisAlignment.start,
-                     children: [
-                       Text("$numberOfFollowing",style: TextStyle(color: Colors.white,fontSize: 18.0,fontWeight: FontWeight.bold)),
-                       const Text("Following",style: TextStyle(color: Colors.white),),
-                   ],),
+                   GestureDetector(
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => FollowingScreen(),)),
+                     child: Column(
+                       mainAxisAlignment: MainAxisAlignment.start,
+                       crossAxisAlignment: CrossAxisAlignment.start,
+                       children: [
+                         Text("$numberOfFollowing",style: const TextStyle(color: Colors.white,fontSize: 18.0,fontWeight: FontWeight.bold)),
+                         const Text("Following",style: TextStyle(color: Colors.white),),
+                     ],),
+                   ),
         
                    Column(
                      mainAxisAlignment: MainAxisAlignment.start,
@@ -387,7 +411,7 @@ class _UserScreenState extends State<UserScreen> {
               final Post post = _posts[index];
               return Padding(
                 padding: const EdgeInsets.all(15.0),
-                child:PostCard(heading: post.heading, body: post.body, postId: post.postId, link: post.link, profilePath: widget.user.profilePath, datetime: post.timeCreated, likes: post.like,isLiked: post.isLiked,)
+                child:PostCard(heading: post.heading, body: post.body, postId: post.postId, link: post.link, hero: post.hero ,profilePath: widget.user.profilePath, datetime: post.timeCreated, likes: post.like,isLiked: post.isLiked,)
               );
 
             }

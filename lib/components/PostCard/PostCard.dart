@@ -9,13 +9,14 @@ import '../../utils/firebase.dart';
 import 'dart:math';
 
 class PostCard extends StatefulWidget {
-  PostCard({super.key, required this.heading, required this.body, required this.postId, required this.link, this.profilePath, required this.datetime, required this.likes, required this.isLiked});
+  PostCard({super.key, required this.heading, required this.body, required this.postId, required this.link, required this.hero ,this.profilePath, required this.datetime, required this.likes, required this.isLiked});
 
   final String heading;
   final String body;
   final String postId;
   final String link;
-  String? profilePath;
+  final String hero;
+  final String? profilePath;
   final Timestamp datetime;
   final int likes;
   final bool isLiked;
@@ -48,13 +49,15 @@ class _PostCardState extends State<PostCard> {
       
                 Expanded(
                   child: GestureDetector(
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => PostScreen(post: Post(heading: widget.heading, body: widget.body, postId: widget.postId, link: widget.link, like: widget.likes, timeCreated: widget.datetime, isLiked: widget.isLiked)),)) ,
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => PostScreen(post: Post(heading: widget.heading, body: widget.body, postId: widget.postId, link: widget.link, like: widget.likes, hero: widget.hero ,timeCreated: widget.datetime, isLiked: widget.isLiked,imgPath: widget.profilePath)),)) ,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(widget.heading,style: const TextStyle(fontSize: 18.0) ,overflow: TextOverflow.ellipsis), // heading
                           
                         Text(widget.link,style: const TextStyle(fontWeight: FontWeight.bold)),
+
+                        // Text(widget.hero!),  
                                     
                         const SizedBox(height: 4,),
                                     

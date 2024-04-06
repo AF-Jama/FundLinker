@@ -19,7 +19,7 @@ void main() async {
   options: DefaultFirebaseOptions.currentPlatform,
 
   );
-  // final RedisClient client  = await Redis.getRedisClient();
+  // await Redis.getRedisClient();
   // await connectToFirebaseEmulator();
   runApp(const MyApp());
 }

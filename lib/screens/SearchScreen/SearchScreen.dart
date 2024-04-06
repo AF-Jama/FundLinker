@@ -37,7 +37,7 @@ class _SearchScreenState extends State<SearchScreen> {
       body: Column(
         children: [
           Container(
-            padding: EdgeInsets.only(top: statusBarHeight+appBarHeight,bottom: 30.0,left: 12.0,right: 12.0), 
+            padding: const EdgeInsets.only(top: 5.0,bottom: 30.0,left: 12.0,right: 12.0), 
             child: TextField(
               onChanged: (value) {
                 print("Text changed: $value");

@@ -10,6 +10,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:redis_dart/redis_dart.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 
 class Authentication{
@@ -82,7 +83,7 @@ class Redis{
 
 
 class Post{
-  Post({ this.imgPath, required this.heading, required this.body, required this.postId, required this.link, required this.like ,required this.timeCreated, required this.isLiked });
+  Post({ this.imgPath, required this.heading, required this.body, required this.postId, required this.link, required this.like , required this.hero,required this.timeCreated, required this.isLiked });
 
   String? imgPath; // img path can be actual path or null
   final String heading;
@@ -90,38 +91,41 @@ class Post{
   final String postId;
   final String link;
   final int like;
+  final String hero;
   final Timestamp timeCreated;
   final bool isLiked;
 }
 
 
 class AppUser{
-  AppUser({ required this.firstName, required this.lastName, required this.username, this.profilePath, required this.uid, this.followers, this.following });
+  AppUser({ required this.firstName, required this.lastName, required this.username, this.profilePath, required this.uid, });
 
   final String firstName;
   final String lastName;
   final String username;
   String? profilePath;
   final String uid;
-  List<dynamic>? followers; // followers id list, List<String>? ???
-  List<dynamic>? following; // following id list, List<String>? ???
+  // List<dynamic>? followers; // followers id list, List<String>? ???
+  // List<dynamic>? following; // following id list, List<String>? ???
 
 
 }
 
 class Scrape{
-  Scrape({ required this.currentTotal, required this.donaters, required this.goal, required this.title  });
+  Scrape({ required this.currentTotal, required this.donaters, required this.goal, required this.title, required this.hero, required this.identifier  });
 
   final String currentTotal;
   final String donaters;
   final String goal;
   final String title;
+  final String hero;
+  final String identifier;
   
 }
 
 Future<Scrape?> getFundraiserData(String url) async {
   try{
-    final response = await http.get(Uri.parse("http://10.0.2.2:5000/data?url=https://$url"));
+    final response = await http.get(Uri.parse("https://dataserver-seven.vercel.app/data?url=https://$url"));
 
     if(response.statusCode==200){
       final Map<String,dynamic> data = jsonDecode(response.body) as Map<String,dynamic>;
@@ -130,7 +134,7 @@ Future<Scrape?> getFundraiserData(String url) async {
         throw Exception("Unable to fetch data");
       }
 
-      return Scrape(currentTotal: data['data']['current_total'], donaters: data['data']['donaters'], goal: data['data']['goal'], title: data['data']['title']);
+      return Scrape(currentTotal: data['data']['current_total'], donaters: data['data']['donaters'], goal: data['data']['goal'], title: data['data']['title'],hero: data['data']['hero'],identifier: data['data']['identifer']);
     }else{
       throw Exception("Could not fetch fundraiser data");
     }
@@ -138,6 +142,14 @@ Future<Scrape?> getFundraiserData(String url) async {
 
   }catch(error){
     return null;
+  }
+}
+
+Future<void> launchEndpoint(String _url) async {
+  if (await canLaunchUrl(Uri.parse("https://$_url"))) {
+    await launchUrl(Uri.parse("https://$_url"));
+  } else {
+    throw 'Could not launch $_url';
   }
 }
 
